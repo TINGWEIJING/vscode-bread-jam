@@ -1,18 +1,8 @@
 import * as vscode from "vscode";
-import {
-  debounce,
-  isPresent,
-  isTruthy,
-  pearsonHash,
-  scaleHash,
-  splitString,
-} from "./util";
 import DecorationManager from "./decorationManager";
+import { decorate_subText_fadeInGradient_commonly } from "./decorationProcessor";
 import { SemanticCodeToken } from "./type";
-import {
-  decorateWithMultiGradientColorsByWholeText,
-  decorateWithMultiSolidColorsByFirstCharacterOfSubstring,
-} from "./decorationProcessor";
+import { debounce } from "./util";
 
 const debouncedDecorateVariables = debounce(decorateVariables, 500);
 
@@ -43,12 +33,12 @@ export async function decorateVariables(editor: vscode.TextEditor | undefined) {
   );
 
   // filter out the tokens that are not variables
-  const variableTokens = result.filter((token) =>
-    ["variable", "parameter", "property"].includes(token.tokenType),
+  const variableTokens = result.filter(
+    (token) => ["variable", "parameter", "property"].includes(token.tokenType), // TODO (WJ): make into configuration
   );
 
   const [resultDecorationTypes, resultDecorationRangesList] =
-    decorateWithMultiGradientColorsByWholeText(variableTokens);
+    decorate_subText_fadeInGradient_commonly(variableTokens);
   for (let i = 0; i < resultDecorationTypes.length; i++) {
     editor.setDecorations(
       resultDecorationTypes[i],

@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
-import { EMOJIS } from "./constant";
+import { ALPHA_MIXING_VALUES, EMOJIS } from "./constant";
 import { colorAlphaMixing, readJsonFileInAssets } from "./util";
 
 class DecorationManager {
   private static instance: DecorationManager;
-  public static readonly EXPERIMENT_DECORATION_OPTION: vscode.ThemableDecorationRenderOptions =
+  public static readonly EXPERIMENT_DECORATION_OPTION: vscode.ThemableDecorationRenderOptions = // TODO (WJ): remove
     {
       backgroundColor: "rgba(255, 255, 0, 0.3)", // Yellow with transparency
       outline: "2px solid red",
@@ -40,7 +40,7 @@ class DecorationManager {
         textDecoration: "none",
       },
     };
-  public static readonly SAMPLE_DECORATION_OPTION: vscode.ThemableDecorationRenderOptions =
+  public static readonly SAMPLE_DECORATION_OPTION: vscode.ThemableDecorationRenderOptions = // TODO (WJ): remove
     {
       color: "#FF4500", // Orange text color
       // backgroundColor: "rgba(255, 255, 0, 0.3)", // Yellow with transparency
@@ -50,12 +50,12 @@ class DecorationManager {
       //   margin: "0 px 0 0", // Margin around the 'before' content
       // },
     };
-  public experimentDecorationType: vscode.TextEditorDecorationType;
-  public sampleDecorationType: vscode.TextEditorDecorationType;
-  public decorationTypes: vscode.TextEditorDecorationType[] = [];
+  public experimentDecorationType: vscode.TextEditorDecorationType; // TODO (WJ): remove
+  public sampleDecorationType: vscode.TextEditorDecorationType; // TODO (WJ): remove
+  public decorationTypes: vscode.TextEditorDecorationType[] = []; // TODO (WJ): remove
   public emojiDecorationTypes: vscode.TextEditorDecorationType[] = [];
   public solidColorDecorationTypes: vscode.TextEditorDecorationType[] = [];
-  public gradientColorDecorationTypesList: vscode.TextEditorDecorationType[][] =
+  public gradientColorDecorationType2dArray: vscode.TextEditorDecorationType[][] =
     [];
 
   private constructor() {
@@ -95,12 +95,13 @@ class DecorationManager {
   public async initialize() {
     readJsonFileInAssets<string[]>("colors.json").then((colors) => {
       if (colors !== null) {
-        this.gradientColorDecorationTypesList = Array.from(
+        this.gradientColorDecorationType2dArray = Array.from(
           { length: colors.length },
           () => [],
         );
 
         for (let i = 0; i < colors.length; i++) {
+          // Create solid color decoration types
           const colorDecorationOption: vscode.ThemableDecorationRenderOptions =
             {
               color: colors[i],
@@ -109,17 +110,16 @@ class DecorationManager {
             vscode.window.createTextEditorDecorationType(colorDecorationOption),
           );
 
-          for (let j = 0; j < 10; j++) {
-            // TODO (WJ): convert to predefined 0, 0.1, 0.2
-            // const alpha = (10 - j) / 10;
-            const alpha = j / 10;
-            const mixedColor = colorAlphaMixing(colors[i], "#FFFFFF", alpha); // TODO (WJ): dynamic 2nd color
+          // Create gradient color decoration types
+          for (let j = 0; j < ALPHA_MIXING_VALUES.length; j++) {
+            const alpha = ALPHA_MIXING_VALUES[j];
+            const mixedColor = colorAlphaMixing(colors[i], "#9CDCFE", alpha); // TODO (WJ): dynamic 2nd color
             if (mixedColor !== null) {
               const colorDecorationOption: vscode.ThemableDecorationRenderOptions =
                 {
                   color: mixedColor,
                 };
-              this.gradientColorDecorationTypesList[i].push(
+              this.gradientColorDecorationType2dArray[i].push(
                 vscode.window.createTextEditorDecorationType(
                   colorDecorationOption,
                 ),
