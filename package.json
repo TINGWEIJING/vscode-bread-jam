@@ -21,7 +21,116 @@
         "command": "color-variable-alpha.helloWorld",
         "title": "Hello World"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Color Variable Alpha",
+      "properties": {
+        "colorVariableAlpha.renderDelay": {
+          "order": 0,
+          "type": "integer",
+          "multipleOf": 10,
+          "minimum": 100,
+          "default": 500,
+          "description": "Delay in milliseconds before rendering the color variable. (Debounce)"
+        },
+        "colorVariableAlpha.ignoreFirstSubToken": {
+          "order": 1,
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Ignore the first sub token. Example: ```isTrue; // `is` is ignore```"
+        },
+        "colorVariableAlpha.excludeFileExtensions": {
+          "order": 2,
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Exclude file extensions"
+        },
+        "colorVariableAlpha.defaultPattern": {
+          "order": 3,
+          "type": "string",
+          "default": "01",
+          "enum": [
+            "01",
+            "02"
+          ],
+          "enumDescriptions": [
+            "Pattern 01",
+            "Pattern 02"
+          ],
+          "enumItemLabels": [
+            "Unique sub text",
+            "Unique text"
+          ],
+          "description": "Default pattern."
+        },
+        "colorVariableAlpha.commonColor": {
+          "order": 4,
+          "type": "string",
+          "default": "#000000",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "description": "Common color."
+        },
+        "colorVariableAlpha.targetedSemanticTokenTypes": {
+          "order": 5,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "namespace",
+              "class",
+              "enum",
+              "interface",
+              "struct",
+              "typeParameter",
+              "type",
+              "parameter",
+              "variable",
+              "property",
+              "enumMember",
+              "decorator",
+              "event",
+              "function",
+              "method",
+              "macro",
+              "label",
+              "comment",
+              "string",
+              "keyword",
+              "number",
+              "regexp",
+              "operator"
+            ]
+          },
+          "default": [
+            "variable",
+            "parameter",
+            "property"
+          ],
+          "description": "Targeted Semantic token types to render."
+        },
+        "colorVariableAlpha.semanticTokenTypeForegroundColors": {
+          "order": 6,
+          "type": "object",
+          "default": {
+            "variable": "#000000",
+            "parameter": "#000000",
+            "property": "#000000"
+          },
+          "patternProperties": {
+            "^[a-zA-Z]+[a-zA-Z0-9]*$": {
+              "type": "string",
+              "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+              "description": "Foreground color for semantic token types."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Semantic token type foreground colors for fade in/out gradient."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
