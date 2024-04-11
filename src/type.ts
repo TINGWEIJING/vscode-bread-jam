@@ -12,3 +12,16 @@ export interface SemanticCodeToken {
   tokenType: string;
   tokenModifiers: string[];
 }
+
+// NOTE: Always refer package.json for the latest configuration
+export interface ExtensionConfig {
+  renderDelay: number;
+  ignoreFirstSubToken: boolean;
+  excludeFileExtensions: string[];
+  defaultPattern: string;
+  solidColors: string[];
+  gradientColors: string[];
+  commonColor: string;
+  targetedSemanticTokenTypes: string[];
+  semanticTokenTypeForegroundColors: { [key: string]: string };
+}

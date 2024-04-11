@@ -19,7 +19,11 @@
     "commands": [
       {
         "command": "color-variable-alpha.helloWorld",
-        "title": "Hello World"
+        "title": "Color Variable: Hello World"
+      },
+      {
+        "command": "colorVariableAlpha.forceClearDecorations",
+        "title": "Color Variable: Force Clear Decorations"
       }
     ],
     "configuration": {
@@ -67,11 +71,38 @@
           "description": "Default pattern."
         },
         "colorVariableAlpha.commonColor": {
-          "order": 4,
+          "order": 7,
           "type": "string",
           "default": "#000000",
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "description": "Common color."
+        },
+        "colorVariableAlpha.solidColors": {
+          "order": 5,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "default": [
+            "#d4b300",
+            "#6d8891",
+            "#886288",
+            "#c5eff7",
+            "#c8f7c5",
+            "#7fffd4"
+          ],
+          "description": "Solid colors."
+        },
+        "colorVariableAlpha.gradientColors": {
+          "order": 6,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "default": [],
+          "description": "Gradient colors. Will use solid colors if is empty."
         },
         "colorVariableAlpha.targetedSemanticTokenTypes": {
           "order": 5,

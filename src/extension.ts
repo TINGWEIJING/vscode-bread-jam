@@ -61,8 +61,15 @@ export async function activate(context: vscode.ExtensionContext) {
       );
     },
   );
+  const forceClearDecorationsDiposable = vscode.commands.registerCommand(
+    "colorVariableAlpha.forceClearDecorations",
+    async () => {
+      DecorationManager.getInstance().dispose();
+    },
+  );
 
   context.subscriptions.push(disposable);
+  context.subscriptions.push(forceClearDecorationsDiposable);
   context.subscriptions.push(
     vscode.workspace.onDidChangeTextDocument((textDocumentChangeEvent) => {
       const fileName = textDocumentChangeEvent.document.fileName;
@@ -79,10 +86,27 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor(debouncedDecorateVariables),
   );
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((configurationChangeEvent) => {
+      const configurationChanged =
+        configurationChangeEvent.affectsConfiguration("colorVariableAlpha");
+      if (configurationChanged) {
+        DecorationManager.getInstance().dispose();
+        DecorationManager.getInstance().initialize();
+      }
+    }),
+  );
+
+  const activeEditor = vscode.window.activeTextEditor;
+  if (activeEditor) {
+    debouncedDecorateVariables(activeEditor);
+  }
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+  DecorationManager.getInstance().dispose();
+}
 
 export function decodeSemanticTokensData(
   legend: vscode.SemanticTokensLegend,
