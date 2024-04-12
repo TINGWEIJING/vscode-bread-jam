@@ -4,7 +4,7 @@ import { decorate_subText_fadeInGradient_commonly } from "./decorationProcessor"
 import { SemanticCodeToken } from "./type";
 import { debounce } from "./util";
 
-const debouncedDecorateVariables = debounce(decorateVariables, 500);
+const debouncedDecorateVariables = debounce(decorateVariables, 500); // TODO (WJ): move into decoration manager
 
 export async function decorateVariables(editor: vscode.TextEditor | undefined) {
   if (editor === undefined) {
@@ -51,7 +51,7 @@ export async function activate(context: vscode.ExtensionContext) {
   console.log(
     'Congratulations, your extension "color-variable-alpha" is now active!',
   );
-  await DecorationManager.getInstance().initialize();
+  DecorationManager.getInstance().initialize();
 
   let disposable = vscode.commands.registerCommand(
     "color-variable-alpha.helloWorld",
@@ -61,19 +61,30 @@ export async function activate(context: vscode.ExtensionContext) {
       );
     },
   );
-  const forceClearDecorationsDiposable = vscode.commands.registerCommand(
-    "colorVariableAlpha.forceClearDecorations",
+  const clearDecorationsTemporarilyDiposable = vscode.commands.registerCommand(
+    "colorVariableAlpha.clearDecorationsTemporarily",
     async () => {
       DecorationManager.getInstance().dispose();
     },
   );
+  const reloadDecorationsDiposable = vscode.commands.registerCommand(
+    "colorVariableAlpha.reloadDecorations",
+    async () => {
+      DecorationManager.getInstance().dispose();
+      DecorationManager.getInstance().initialize();
+
+      const activeEditor = vscode.window.activeTextEditor;
+      if (activeEditor !== undefined) {
+        debouncedDecorateVariables(activeEditor);
+      }
+    },
+  );
 
   context.subscriptions.push(disposable);
-  context.subscriptions.push(forceClearDecorationsDiposable);
+  context.subscriptions.push(clearDecorationsTemporarilyDiposable);
+  context.subscriptions.push(reloadDecorationsDiposable);
   context.subscriptions.push(
     vscode.workspace.onDidChangeTextDocument((textDocumentChangeEvent) => {
-      const fileName = textDocumentChangeEvent.document.fileName;
-
       const activeEditor = vscode.window.activeTextEditor;
       if (
         activeEditor &&
@@ -97,8 +108,9 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
   );
 
+  // Run decorate variables on activation
   const activeEditor = vscode.window.activeTextEditor;
-  if (activeEditor) {
+  if (activeEditor !== undefined) {
     debouncedDecorateVariables(activeEditor);
   }
 }

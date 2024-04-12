@@ -64,7 +64,7 @@ class DecorationManager {
     return DecorationManager.instance;
   }
 
-  public async initialize() {
+  public initialize() {
     this.extensionConfig = vscode.workspace
       .getConfiguration()
       .get<Partial<ExtensionConfig>>("colorVariableAlpha")!; // TODO (WJ): update configuration key

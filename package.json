@@ -22,8 +22,12 @@
         "title": "Color Variable: Hello World"
       },
       {
-        "command": "colorVariableAlpha.forceClearDecorations",
-        "title": "Color Variable: Force Clear Decorations"
+        "command": "colorVariableAlpha.clearDecorationsTemporarily",
+        "title": "Color Variable: Clear Decorations Temporarily"
+      },
+      {
+        "command": "colorVariableAlpha.reloadDecorations",
+        "title": "Color Variable: Reload Decorations"
       }
     ],
     "configuration": {

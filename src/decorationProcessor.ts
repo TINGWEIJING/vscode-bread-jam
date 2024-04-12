@@ -19,11 +19,13 @@ export function decorate_subText_fadeOutGradient_uniqueSubText(
   codeTokens: SemanticCodeToken[],
 ): [vscode.TextEditorDecorationType[], vscode.Range[][]] {
   const decorationManager = DecorationManager.getInstance();
-  const gradientColorDecorationTypesList =
+  const gradientColorDecorationType2dArray =
     decorationManager.gradientColorDecorationType2dArray;
+  const ignoreFirstSubToken =
+    decorationManager.extensionConfig.ignoreFirstSubToken;
 
-  const decorationRanges3dList: vscode.Range[][][] = Array.from(
-    gradientColorDecorationTypesList,
+  const decorationRanges3dArray: vscode.Range[][][] = Array.from(
+    gradientColorDecorationType2dArray,
     (subArray) => Array.from(subArray, () => []),
   );
   for (let i = 0; i < codeTokens.length; i++) {
@@ -36,7 +38,10 @@ export function decorate_subText_fadeOutGradient_uniqueSubText(
     for (let indexTwo = 0; indexTwo < subTextArr.length; indexTwo++) {
       const subText = subTextArr[indexTwo];
       const subTextLength = subText.length;
-      if (indexTwo === 0 || subText.charAt(0) === "_") {
+      if (
+        (ignoreFirstSubToken && indexTwo === 0) ||
+        subText.charAt(0) === "_"
+      ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
         continue;
@@ -45,10 +50,10 @@ export function decorate_subText_fadeOutGradient_uniqueSubText(
       const pearsonHashValue = pearsonHash(subText);
       const scaledHashValue = scaleHash(
         pearsonHashValue,
-        gradientColorDecorationTypesList.length - 1,
+        gradientColorDecorationType2dArray.length - 1,
       );
       const selectedGradientColorDecorationTypes =
-        gradientColorDecorationTypesList[scaledHashValue];
+        gradientColorDecorationType2dArray[scaledHashValue];
 
       for (
         let indexThree = 0;
@@ -65,15 +70,15 @@ export function decorate_subText_fadeOutGradient_uniqueSubText(
           token.line,
           subTextStartCounter + indexThree + 1,
         );
-        decorationRanges3dList[scaledHashValue][gradientLevel].push(range);
+        decorationRanges3dArray[scaledHashValue][gradientLevel].push(range);
       }
       subTextStartCounter = subTextStartCounter + subTextLength;
     }
   }
 
   const flatGradientColorDecorationTypesList =
-    gradientColorDecorationTypesList.flat();
-  const flatdecorationRanges3dList = decorationRanges3dList.flat();
+    gradientColorDecorationType2dArray.flat();
+  const flatdecorationRanges3dList = decorationRanges3dArray.flat();
   return [flatGradientColorDecorationTypesList, flatdecorationRanges3dList];
 }
 
@@ -345,6 +350,8 @@ export function decorate_subText_fadeInGradient_commonly(
     decorationManager.gradientColorDecorationType2dArray;
   const selectedGradientColorDecorationTypes =
     gradientColorDecorationType2dArray[0];
+  const ignoreFirstSubToken =
+    decorationManager.extensionConfig.ignoreFirstSubToken;
 
   const decorationRange2dArray: vscode.Range[][] = Array.from(
     { length: selectedGradientColorDecorationTypes.length },
@@ -361,7 +368,10 @@ export function decorate_subText_fadeInGradient_commonly(
     for (let indexTwo = 0; indexTwo < subTextArr.length; indexTwo++) {
       const subText = subTextArr[indexTwo];
       const subTextLength = subText.length;
-      if (indexTwo === 0 || subText.charAt(0) === "_") {
+      if (
+        (ignoreFirstSubToken && indexTwo === 0) ||
+        subText.charAt(0) === "_"
+      ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
         continue;
