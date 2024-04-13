@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { ALPHA_MIXING_VALUES, EMOJIS } from "./constant";
-import { colorAlphaMixing, readJsonFileInAssets } from "./util";
+import { EMOJIS } from "./constant";
 import { ExtensionConfig } from "./type";
+import { colorAlphaMixing } from "./util";
 
 class DecorationManager {
   private static instance: DecorationManager;
@@ -46,6 +46,8 @@ class DecorationManager {
   public solidColorDecorationTypes: vscode.TextEditorDecorationType[] = [];
   public solidCommonColorDecorationType: vscode.TextEditorDecorationType =
     vscode.window.createTextEditorDecorationType({});
+  public gradientCommonColorDecorationTypes: vscode.TextEditorDecorationType[] =
+    [];
   public gradientColorDecorationType2dArray: vscode.TextEditorDecorationType[][] =
     [];
   public semanticTokenTypesToGradientColorDecorationType2dArray: {
@@ -64,7 +66,15 @@ class DecorationManager {
     return DecorationManager.instance;
   }
 
-  public initialize() {
+  public static initialize() {
+    DecorationManager.getInstance().initialize();
+  }
+
+  public static clear() {
+    DecorationManager.getInstance().clear();
+  }
+
+  private initialize() {
     this.extensionConfig = vscode.workspace
       .getConfiguration()
       .get<Partial<ExtensionConfig>>("colorVariableAlpha")!; // TODO (WJ): update configuration key
@@ -109,13 +119,14 @@ class DecorationManager {
       vscode.window.createTextEditorDecorationType({ color: commonColor });
 
     // Initialize gradient color decoration types
+    const alphaMixingValues = this.extensionConfig.fadeInGradientSteps ?? [];
     this.gradientColorDecorationType2dArray = Array.from(
       { length: gradientColors.length },
       () => [],
     );
     for (let i = 0; i < gradientColors.length; i++) {
-      for (let j = 0; j < ALPHA_MIXING_VALUES.length; j++) {
-        const alpha = ALPHA_MIXING_VALUES[j];
+      for (let j = 0; j < alphaMixingValues.length; j++) {
+        const alpha = alphaMixingValues[j];
         const mixedColor = colorAlphaMixing(
           gradientColors[i],
           "#9CDCFE",
@@ -133,6 +144,20 @@ class DecorationManager {
       }
     }
 
+    // Initialize gradient common color decoration types
+    for (let i = 0; i < alphaMixingValues.length; i++) {
+      const alpha = alphaMixingValues[i];
+      const mixedColor = colorAlphaMixing(commonColor, "#9CDCFE", alpha); // TODO (WJ): dynamic 2nd color
+      if (mixedColor !== null) {
+        const colorDecorationOption: vscode.ThemableDecorationRenderOptions = {
+          color: mixedColor,
+        };
+        this.gradientCommonColorDecorationTypes.push(
+          vscode.window.createTextEditorDecorationType(colorDecorationOption),
+        );
+      }
+    }
+
     // TODO (WJ): Initialize semantic token types to gradient color decoration types
 
     // TODO (WJ): Initialize semantic token types to gradient common color decoration types
@@ -140,7 +165,10 @@ class DecorationManager {
     console.log("Decoration Manager initialized!"); // TODO (WJ): move to output channel
   }
 
-  public dispose() {
+  /**
+   * NOTE: Make sure all decoration types are disposed before clearing
+   */
+  private clear() {
     // Clear emoji decoration types
     for (const decorationType of this.emojiDecorationTypes) {
       decorationType.dispose();

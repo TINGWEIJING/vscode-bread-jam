@@ -22,6 +22,7 @@ export interface ExtensionConfig {
   solidColors: string[];
   gradientColors: string[];
   commonColor: string;
+  fadeInGradientSteps: number[];
   targetedSemanticTokenTypes: string[];
   semanticTokenTypeForegroundColors: { [key: string]: string };
 }

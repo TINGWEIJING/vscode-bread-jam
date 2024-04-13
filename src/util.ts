@@ -87,7 +87,7 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
   };
 }
 
-export async function readJsonFileInAssets<T = any>(
+export async function readJsonFileInAssets<T = any>( // TODO (WJ): remove
   filePath: string,
 ): Promise<T | null> {
   try {
@@ -113,6 +113,17 @@ export async function readJsonFileInAssets<T = any>(
     vscode.window.showErrorMessage(errorMessage);
     return null;
   }
+}
+
+export function getPointerArray(length: number) {
+  if (length <= 4) {
+    return [0, 5, 10, 15];
+  } else if (length <= 8) {
+    return [0, 2, 4, 6, 9, 11, 13, 15];
+  } else if (length <= 16) {
+    return [0, 1, 3, 4, 5, 7, 8, 10, 11, 12, 14, 15];
+  }
+  return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 }
 
 export function hexToRgb(

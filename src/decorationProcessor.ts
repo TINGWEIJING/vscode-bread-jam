@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import DecorationManager from "./decorationManager";
 import { SemanticCodeToken } from "./type";
-import { pearsonHash, scaleHash, splitString } from "./util";
+import { getPointerArray, pearsonHash, scaleHash, splitString } from "./util";
 
 /* Variable naming / Term
  * - text
@@ -76,10 +76,10 @@ export function decorate_subText_fadeOutGradient_uniqueSubText(
     }
   }
 
-  const flatGradientColorDecorationTypesList =
+  const flatGradientColorDecorationTypesArray =
     gradientColorDecorationType2dArray.flat();
-  const flatdecorationRanges3dList = decorationRanges3dArray.flat();
-  return [flatGradientColorDecorationTypesList, flatdecorationRanges3dList];
+  const flatdecorationRanges3dArray = decorationRanges3dArray.flat();
+  return [flatGradientColorDecorationTypesArray, flatdecorationRanges3dArray];
 }
 
 /**
@@ -92,7 +92,7 @@ export function decorate_subText_fadeOutGradient_uniqueText(
   const gradientColorDecorationType2dArray =
     decorationManager.gradientColorDecorationType2dArray;
 
-  const decorationRanges3dList: vscode.Range[][][] = Array.from(
+  const decorationRanges3dArray: vscode.Range[][][] = Array.from(
     gradientColorDecorationType2dArray,
     (subArray) => Array.from(subArray, () => []),
   );
@@ -120,31 +120,29 @@ export function decorate_subText_fadeOutGradient_uniqueText(
         continue;
       }
 
-      for (
-        let indexThree = 0;
-        indexThree < selectedGradientColorDecorationTypes.length;
-        indexThree++
-      ) {
-        let gradientLevel = indexThree;
-        if (gradientLevel >= subTextLength) {
-          break;
+      const pointerArray = getPointerArray(subTextLength);
+      for (let indexThree = 0; indexThree < subTextLength; indexThree++) {
+        let gradientLevel = selectedGradientColorDecorationTypes.length - 1;
+        if (indexThree < pointerArray.length) {
+          gradientLevel = pointerArray[indexThree];
         }
+
         const range = new vscode.Range(
           token.line,
           subTextStartCounter + indexThree,
           token.line,
           subTextStartCounter + indexThree + 1,
         );
-        decorationRanges3dList[scaledHashValue][gradientLevel].push(range);
+        decorationRanges3dArray[scaledHashValue][gradientLevel].push(range);
       }
       subTextStartCounter = subTextStartCounter + subTextLength;
     }
   }
 
-  const flatGradientColorDecorationTypesList =
+  const flatGradientColorDecorationTypesArray =
     gradientColorDecorationType2dArray.flat();
-  const flatdecorationRanges3dList = decorationRanges3dList.flat();
-  return [flatGradientColorDecorationTypesList, flatdecorationRanges3dList];
+  const flatdecorationRanges3dArray = decorationRanges3dArray.flat();
+  return [flatGradientColorDecorationTypesArray, flatdecorationRanges3dArray];
 }
 
 /**
@@ -211,11 +209,11 @@ export function decorate_subText_fadeInGradient_uniqueSubText(
   codeTokens: SemanticCodeToken[],
 ): [vscode.TextEditorDecorationType[], vscode.Range[][]] {
   const decorationManager = DecorationManager.getInstance();
-  const gradientColorDecorationTypesList =
+  const gradientColorDecorationType2dArray =
     decorationManager.gradientColorDecorationType2dArray;
 
-  const decorationRanges3dList: vscode.Range[][][] = Array.from(
-    gradientColorDecorationTypesList,
+  const decorationRanges3dArray: vscode.Range[][][] = Array.from(
+    gradientColorDecorationType2dArray,
     (subArray) => Array.from(subArray, () => []),
   );
   for (let i = 0; i < codeTokens.length; i++) {
@@ -237,10 +235,10 @@ export function decorate_subText_fadeInGradient_uniqueSubText(
       const pearsonHashValue = pearsonHash(subText);
       const scaledHashValue = scaleHash(
         pearsonHashValue,
-        gradientColorDecorationTypesList.length - 1,
+        gradientColorDecorationType2dArray.length - 1,
       );
       const selectedGradientColorDecorationTypes =
-        gradientColorDecorationTypesList[scaledHashValue];
+        gradientColorDecorationType2dArray[scaledHashValue];
 
       for (
         let indexThree = 0;
@@ -259,16 +257,16 @@ export function decorate_subText_fadeInGradient_uniqueSubText(
           token.line,
           subTextStartCounter + indexThree + 1,
         );
-        decorationRanges3dList[scaledHashValue][gradientLevel].push(range);
+        decorationRanges3dArray[scaledHashValue][gradientLevel].push(range);
       }
       subTextStartCounter = subTextStartCounter + subTextLength;
     }
   }
 
-  const flatGradientColorDecorationTypesList =
-    gradientColorDecorationTypesList.flat();
-  const flatdecorationRanges3dList = decorationRanges3dList.flat();
-  return [flatGradientColorDecorationTypesList, flatdecorationRanges3dList];
+  const flatGradientColorDecorationTypesArray =
+    gradientColorDecorationType2dArray.flat();
+  const flatdecorationRanges3dArray = decorationRanges3dArray.flat();
+  return [flatGradientColorDecorationTypesArray, flatdecorationRanges3dArray];
 }
 
 /**
@@ -281,7 +279,7 @@ export function decorate_subText_fadeInGradient_uniqueText(
   const gradientColorDecorationType2dArray =
     decorationManager.gradientColorDecorationType2dArray;
 
-  const decorationRanges3dList: vscode.Range[][][] = Array.from(
+  const decorationRanges3dArray: vscode.Range[][][] = Array.from(
     gradientColorDecorationType2dArray,
     (subArray) => Array.from(subArray, () => []),
   );
@@ -327,16 +325,16 @@ export function decorate_subText_fadeInGradient_uniqueText(
           token.line,
           subTextStartCounter + indexThree + 1,
         );
-        decorationRanges3dList[scaledHashValue][gradientLevel].push(range);
+        decorationRanges3dArray[scaledHashValue][gradientLevel].push(range);
       }
       subTextStartCounter = subTextStartCounter + subTextLength;
     }
   }
 
-  const flatGradientColorDecorationTypesList =
+  const flatGradientColorDecorationTypesArray =
     gradientColorDecorationType2dArray.flat();
-  const flatdecorationRanges3dList = decorationRanges3dList.flat();
-  return [flatGradientColorDecorationTypesList, flatdecorationRanges3dList];
+  const flatdecorationRanges3dArray = decorationRanges3dArray.flat();
+  return [flatGradientColorDecorationTypesArray, flatdecorationRanges3dArray];
 }
 
 /**
@@ -346,10 +344,8 @@ export function decorate_subText_fadeInGradient_commonly(
   codeTokens: SemanticCodeToken[],
 ): [vscode.TextEditorDecorationType[], vscode.Range[][]] {
   const decorationManager = DecorationManager.getInstance();
-  const gradientColorDecorationType2dArray =
-    decorationManager.gradientColorDecorationType2dArray;
   const selectedGradientColorDecorationTypes =
-    gradientColorDecorationType2dArray[0];
+    decorationManager.gradientCommonColorDecorationTypes;
   const ignoreFirstSubToken =
     decorationManager.extensionConfig.ignoreFirstSubToken;
 
@@ -377,17 +373,14 @@ export function decorate_subText_fadeInGradient_commonly(
         continue;
       }
 
-      for (
-        let indexThree = 0;
-        indexThree < selectedGradientColorDecorationTypes.length;
-        indexThree++
-      ) {
-        let gradientLevel = indexThree;
-        if (gradientLevel >= subTextLength) {
-          break;
+      const pointerArray = getPointerArray(subTextLength);
+      for (let indexThree = 0; indexThree < subTextLength; indexThree++) {
+        let gradientLevel = 0;
+        if (indexThree < pointerArray.length) {
+          gradientLevel = pointerArray[indexThree];
+          gradientLevel =
+            selectedGradientColorDecorationTypes.length - gradientLevel - 1;
         }
-        gradientLevel =
-          selectedGradientColorDecorationTypes.length - gradientLevel - 1;
         const range = new vscode.Range(
           token.line,
           subTextStartCounter + indexThree,
@@ -412,7 +405,7 @@ export function decorate_firstCharacter_solidColor_uniqueSubText(
   const decorationManager = DecorationManager.getInstance();
   const solidColorDecorationTypes = decorationManager.solidColorDecorationTypes;
 
-  const decorationRangesList: vscode.Range[][] = Array.from(
+  const decorationRange2dArray: vscode.Range[][] = Array.from(
     { length: solidColorDecorationTypes.length },
     () => [],
   );
@@ -444,13 +437,13 @@ export function decorate_firstCharacter_solidColor_uniqueSubText(
         subTextStartCounter + 1,
       );
       if (j > 0) {
-        decorationRangesList[scaledHashValue].push(range);
+        decorationRange2dArray[scaledHashValue].push(range);
       }
       subTextStartCounter = subTextStartCounter + subTextLength;
     }
   }
 
-  return [solidColorDecorationTypes, decorationRangesList];
+  return [solidColorDecorationTypes, decorationRange2dArray];
 }
 
 /**
@@ -462,7 +455,7 @@ export function decorate_firstCharacter_solidColor_uniqueText(
   const decorationManager = DecorationManager.getInstance();
   const solidColorDecorationTypes = decorationManager.solidColorDecorationTypes;
 
-  const decorationRangesList: vscode.Range[][] = Array.from(
+  const decorationRange2dArray: vscode.Range[][] = Array.from(
     { length: solidColorDecorationTypes.length },
     () => [],
   );
@@ -495,13 +488,13 @@ export function decorate_firstCharacter_solidColor_uniqueText(
         subTextStartCounter + 1,
       );
       if (j > 0) {
-        decorationRangesList[scaledHashValue].push(range);
+        decorationRange2dArray[scaledHashValue].push(range);
       }
       subTextStartCounter = subTextStartCounter + subTextLength;
     }
   }
 
-  return [solidColorDecorationTypes, decorationRangesList];
+  return [solidColorDecorationTypes, decorationRange2dArray];
 }
 
 /**
@@ -556,7 +549,7 @@ export function decorate_text_emoji(
   const decorationManager = DecorationManager.getInstance();
   const decorationTypes = decorationManager.emojiDecorationTypes;
 
-  const decorationRangesList: vscode.Range[][] = Array.from(
+  const decorationRange2dArray: vscode.Range[][] = Array.from(
     { length: decorationTypes.length },
     () => [],
   );
@@ -576,10 +569,10 @@ export function decorate_text_emoji(
       token.line,
       token.start + 1,
     );
-    decorationRangesList[scaledHashValue].push(textRange);
+    decorationRange2dArray[scaledHashValue].push(textRange);
   }
 
-  return [decorationTypes, decorationRangesList];
+  return [decorationTypes, decorationRange2dArray];
 }
 
 /**

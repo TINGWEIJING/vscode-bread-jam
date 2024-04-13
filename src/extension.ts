@@ -37,12 +37,14 @@ export async function decorateVariables(editor: vscode.TextEditor | undefined) {
     (token) => ["variable", "parameter", "property"].includes(token.tokenType), // TODO (WJ): make into configuration
   );
 
-  const [resultDecorationTypes, resultDecorationRangesList] =
+  console.time("decorate");
+  const [resultDecorationTypes, resultDecorationRange2dArray] =
     decorate_subText_fadeInGradient_commonly(variableTokens);
+  console.timeEnd("decorate");
   for (let i = 0; i < resultDecorationTypes.length; i++) {
     editor.setDecorations(
       resultDecorationTypes[i],
-      resultDecorationRangesList[i],
+      resultDecorationRange2dArray[i],
     );
   }
 }
@@ -51,7 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
   console.log(
     'Congratulations, your extension "color-variable-alpha" is now active!',
   );
-  DecorationManager.getInstance().initialize();
+  DecorationManager.initialize();
 
   let disposable = vscode.commands.registerCommand(
     "color-variable-alpha.helloWorld",
@@ -64,17 +66,18 @@ export async function activate(context: vscode.ExtensionContext) {
   const clearDecorationsTemporarilyDiposable = vscode.commands.registerCommand(
     "colorVariableAlpha.clearDecorationsTemporarily",
     async () => {
-      DecorationManager.getInstance().dispose();
+      DecorationManager.clear();
     },
   );
   const reloadDecorationsDiposable = vscode.commands.registerCommand(
     "colorVariableAlpha.reloadDecorations",
     async () => {
-      DecorationManager.getInstance().dispose();
-      DecorationManager.getInstance().initialize();
+      DecorationManager.clear();
+      DecorationManager.initialize();
 
       const activeEditor = vscode.window.activeTextEditor;
       if (activeEditor !== undefined) {
+        console.log("-> Reload");
         debouncedDecorateVariables(activeEditor);
       }
     },
@@ -90,34 +93,47 @@ export async function activate(context: vscode.ExtensionContext) {
         activeEditor &&
         activeEditor.document === textDocumentChangeEvent.document
       ) {
+        console.log("-> Text Document Changed");
         debouncedDecorateVariables(activeEditor);
       }
     }),
   );
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor(debouncedDecorateVariables),
+    // vscode.window.onDidChangeActiveTextEditor(debouncedDecorateVariables), // TODO (WJ): use back this
+    vscode.window.onDidChangeActiveTextEditor((e) => {
+      console.log("-> Active Text Editor Changed");
+      debouncedDecorateVariables(e);
+    }),
   );
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((configurationChangeEvent) => {
       const configurationChanged =
         configurationChangeEvent.affectsConfiguration("colorVariableAlpha");
-      if (configurationChanged) {
-        DecorationManager.getInstance().dispose();
-        DecorationManager.getInstance().initialize();
+      if (!configurationChanged) {
+        return;
       }
+      DecorationManager.clear();
+      DecorationManager.initialize();
+      const activeEditor = vscode.window.activeTextEditor;
+      if (activeEditor === undefined) {
+        return;
+      }
+      console.log("-> Configuration Changed");
+      debouncedDecorateVariables(activeEditor);
     }),
   );
 
   // Run decorate variables on activation
   const activeEditor = vscode.window.activeTextEditor;
   if (activeEditor !== undefined) {
+    console.log("-> First Run");
     debouncedDecorateVariables(activeEditor);
   }
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() {
-  DecorationManager.getInstance().dispose();
+  DecorationManager.clear();
 }
 
 export function decodeSemanticTokensData(
