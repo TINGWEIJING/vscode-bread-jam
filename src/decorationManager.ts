@@ -194,6 +194,12 @@ class DecorationManager {
     }
     this.gradientColorDecorationType2dArray = [];
 
+    // Clear gradient common color decoration types
+    for (const decorationType of this.gradientCommonColorDecorationTypes) {
+      decorationType.dispose();
+    }
+    this.gradientCommonColorDecorationTypes = [];
+
     // Clear semantic token types to gradient color decoration types
     for (const key in this
       .semanticTokenTypesToGradientColorDecorationType2dArray) {

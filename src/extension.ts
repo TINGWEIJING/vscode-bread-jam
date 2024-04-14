@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import DecorationManager from "./decorationManager";
-import { decorate_subText_fadeInGradient_commonly } from "./decorationProcessor";
+import {
+  decorate_subText_fadeInGradient_commonly,
+  decorate_subText_fadeOutGradient_commonly,
+} from "./decorationProcessor";
 import { SemanticCodeToken } from "./type";
 import { debounce } from "./util";
 
@@ -39,7 +42,7 @@ export async function decorateVariables(editor: vscode.TextEditor | undefined) {
 
   console.time("decorate");
   const [resultDecorationTypes, resultDecorationRange2dArray] =
-    decorate_subText_fadeInGradient_commonly(variableTokens);
+    decorate_subText_fadeOutGradient_commonly(variableTokens);
   console.timeEnd("decorate");
   for (let i = 0; i < resultDecorationTypes.length; i++) {
     editor.setDecorations(
@@ -67,6 +70,7 @@ export async function activate(context: vscode.ExtensionContext) {
     "colorVariableAlpha.clearDecorationsTemporarily",
     async () => {
       DecorationManager.clear();
+      DecorationManager.initialize();
     },
   );
   const reloadDecorationsDiposable = vscode.commands.registerCommand(

@@ -152,10 +152,10 @@ export function decorate_subText_fadeOutGradient_commonly(
   codeTokens: SemanticCodeToken[],
 ): [vscode.TextEditorDecorationType[], vscode.Range[][]] {
   const decorationManager = DecorationManager.getInstance();
-  const gradientColorDecorationType2dArray =
-    decorationManager.gradientColorDecorationType2dArray;
   const selectedGradientColorDecorationTypes =
-    gradientColorDecorationType2dArray[0];
+    decorationManager.gradientCommonColorDecorationTypes;
+  const ignoreFirstSubToken =
+    decorationManager.extensionConfig.ignoreFirstSubToken;
 
   const decorationRange2dArray: vscode.Range[][] = Array.from(
     { length: selectedGradientColorDecorationTypes.length },
@@ -172,21 +172,22 @@ export function decorate_subText_fadeOutGradient_commonly(
     for (let indexTwo = 0; indexTwo < subTextArr.length; indexTwo++) {
       const subText = subTextArr[indexTwo];
       const subTextLength = subText.length;
-      if (indexTwo === 0 || subText.charAt(0) === "_") {
+      if (
+        (ignoreFirstSubToken && indexTwo === 0) ||
+        subText.charAt(0) === "_"
+      ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
         continue;
       }
 
-      for (
-        let indexThree = 0;
-        indexThree < selectedGradientColorDecorationTypes.length;
-        indexThree++
-      ) {
-        let gradientLevel = indexThree;
-        if (gradientLevel >= subTextLength) {
-          break;
+      const pointerArray = getPointerArray(subTextLength);
+      for (let indexThree = 0; indexThree < subTextLength; indexThree++) {
+        let gradientLevel = selectedGradientColorDecorationTypes.length - 1;
+        if (indexThree < pointerArray.length) {
+          gradientLevel = pointerArray[indexThree];
         }
+
         const range = new vscode.Range(
           token.line,
           subTextStartCounter + indexThree,
