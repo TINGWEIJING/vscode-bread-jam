@@ -177,6 +177,38 @@
           ],
           "description": "Targeted Semantic token types to render."
         },
+        "colorVariableAlpha.targetedSemanticModifiers": {
+          "order": 5,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "declaration",
+              "definition",
+              "readonly",
+              "static",
+              "deprecated",
+              "abstract",
+              "async",
+              "modification",
+              "documentation",
+              "defaultLibrary"
+            ]
+          },
+          "default": [
+            "declaration",
+            "definition",
+            "readonly",
+            "static",
+            "deprecated",
+            "abstract",
+            "async",
+            "modification",
+            "documentation",
+            "defaultLibrary"
+          ],
+          "description": "Targeted Semantic modifiers to render."
+        },
         "colorVariableAlpha.semanticTokenTypeForegroundColors": {
           "order": 6,
           "type": "object",
@@ -194,6 +226,24 @@
           },
           "additionalProperties": false,
           "description": "Semantic token type foreground colors for fade in/out gradient."
+        },
+        "colorVariableAlpha.semanticModifierForegroundColors": {
+          "order": 6,
+          "type": "object",
+          "default": {
+            "declaration": "#000000",
+            "definition": "#000000",
+            "readonly": "#000000"
+          },
+          "patternProperties": {
+            "^[a-zA-Z]+[a-zA-Z0-9]*$": {
+              "type": "string",
+              "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+              "description": "Foreground color for semantic modifier."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Semantic modifier foreground colors for fade in/out gradient."
         }
       }
     }
