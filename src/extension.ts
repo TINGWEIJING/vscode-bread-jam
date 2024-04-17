@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from "vscode"; // TODO (WJ): avoid import all
 import DecorationManager from "./decorationManager";
 import {
   decorate_subText_fadeInGradient_commonly,
@@ -6,6 +6,7 @@ import {
 } from "./decorationProcessor";
 import { SemanticCodeToken } from "./type";
 import { debounce } from "./util";
+import { QUICK_PICK_ITEMS } from "./constant";
 
 const debouncedDecorateVariables = debounce(decorateVariables, 500); // TODO (WJ): move into decoration manager
 
@@ -13,6 +14,8 @@ export async function decorateVariables(editor: vscode.TextEditor | undefined) {
   if (editor === undefined) {
     return;
   }
+
+  console.time("decorate");
   const uri = editor.document.uri;
 
   const [legend, semanticTokens] = await Promise.all([
@@ -40,16 +43,15 @@ export async function decorateVariables(editor: vscode.TextEditor | undefined) {
     (token) => ["variable", "parameter", "property"].includes(token.tokenType), // TODO (WJ): make into configuration
   );
 
-  console.time("decorate");
   const [resultDecorationTypes, resultDecorationRange2dArray] =
     decorate_subText_fadeOutGradient_commonly(variableTokens);
-  console.timeEnd("decorate");
   for (let i = 0; i < resultDecorationTypes.length; i++) {
     editor.setDecorations(
       resultDecorationTypes[i],
       resultDecorationRange2dArray[i],
     );
   }
+  console.timeEnd("decorate");
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -66,7 +68,28 @@ export async function activate(context: vscode.ExtensionContext) {
       );
     },
   );
-  const clearDecorationsTemporarilyDiposable = vscode.commands.registerCommand(
+  let promptRenderPatternSelectionCommand = vscode.commands.registerCommand(
+    "colorVariableAlpha.promptRenderPatternSelection",
+    () => {
+      const quickPick = vscode.window.createQuickPick();
+      // TODO (WJ): update picked
+      // QUICK_PICK_ITEMS[0].picked = true;
+      quickPick.items = QUICK_PICK_ITEMS;
+      quickPick.matchOnDetail = true;
+      quickPick.matchOnDescription = true;
+      quickPick.ignoreFocusOut = true;
+      // quickPick.selectedItems = [quickPickItems[2]];
+      quickPick.onDidChangeSelection((selection) => {
+        console.log(
+          "🚀 ~ quickPick.onDidChangeSelection ~ selection:",
+          selection,
+        );
+      });
+      quickPick.onDidHide(() => quickPick.dispose());
+      quickPick.show();
+    },
+  );
+  const clearDecorationsTemporarilyCommand = vscode.commands.registerCommand(
     "colorVariableAlpha.clearDecorationsTemporarily",
     async () => {
       DecorationManager.clear();
@@ -88,7 +111,8 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(disposable);
-  context.subscriptions.push(clearDecorationsTemporarilyDiposable);
+  context.subscriptions.push(clearDecorationsTemporarilyCommand);
+  context.subscriptions.push(promptRenderPatternSelectionCommand);
   context.subscriptions.push(reloadDecorationsDiposable);
   context.subscriptions.push(
     vscode.workspace.onDidChangeTextDocument((textDocumentChangeEvent) => {

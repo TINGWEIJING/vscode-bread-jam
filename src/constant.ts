@@ -1,3 +1,5 @@
+import { QuickPickItemKind, type QuickPickItem } from "vscode";
+
 // export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from({ length: 256 }, (_, i) => i);
 export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from([
   234, 9, 103, 60, 5, 79, 232, 229, 45, 51, 131, 3, 168, 29, 170, 216, 99, 161,
@@ -18,12 +20,73 @@ export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from([
   255, 62, 70, 189, 6, 57,
 ]);
 
-export const COLORS: string[] = [];
+export const QUICK_PICK_ITEMS: QuickPickItem[] = [
+  {
+    label: "Fade Out Gradient",
+    kind: QuickPickItemKind.Separator,
+  },
+  {
+    label: "01",
+    description: "Subtext - Fade Out Gradient - Unique Subtext",
+  },
+  {
+    label: "02",
+    description: "Subtext - Fade Out Gradient - Unique Text",
+  },
+  {
+    label: "03",
+    description: "Subtext - Fade Out Gradient - Commonly",
+  },
+  {
+    label: "Fade In Gradient",
+    kind: QuickPickItemKind.Separator,
+  },
+  {
+    label: "04",
+    description: "Subtext - Fade In Gradient - Unique Subtext",
+  },
+  {
+    label: "05",
+    description: "Subtext - Fade In Gradient - Unique Text",
+  },
+  {
+    label: "06",
+    description: "Subtext - Fade In Gradient - Commonly",
+  },
+  {
+    label: "First Character Solid Color",
+    kind: QuickPickItemKind.Separator,
+  },
+  {
+    label: "07",
+    description: "First Character - Solid Color - Unique Subtext",
+  },
+  {
+    label: "08",
+    description: "First Character - Solid Color - Unique Text",
+  },
+  {
+    label: "09",
+    description: "First Character - Solid Color - Commonly",
+  },
+  {
+    label: "Emoji",
+    kind: QuickPickItemKind.Separator,
+  },
+  {
+    label: "10",
+    description: "Whole Text - Emoji",
+  },
+  {
+    label: "Whole Subtext Solid Color",
+    kind: QuickPickItemKind.Separator,
+  },
+  {
+    label: "11",
+    description: "Subtext - Solid Color - Unique Subtext",
+  },
+];
 
-// export const ALPHA_MIXING_VALUES: number[] = [
-//   0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65,
-//   0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
-// ];
 export const ALPHA_MIXING_VALUES: number[] = [
   0.1, 0.23, 0.41, 0.56, 0.67, 0.76, 0.83, 0.88, 0.92, 0.95, 0.97, 0.98, 0.99,
   0.99, 1, 1, 1, 1, 1, 1,

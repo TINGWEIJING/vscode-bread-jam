@@ -22,6 +22,10 @@
         "title": "Color Variable: Hello World"
       },
       {
+        "command": "colorVariableAlpha.promptRenderPatternSelection",
+        "title": "Color Variable: Select Render Pattern"
+      },
+      {
         "command": "colorVariableAlpha.clearDecorationsTemporarily",
         "title": "Color Variable: Clear Decorations Temporarily"
       },
