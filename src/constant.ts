@@ -20,6 +20,20 @@ export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from([
   255, 62, 70, 189, 6, 57,
 ]);
 
+export const QUICK_PICK_DESCRIPTIONS: string[] = [
+  "Subtext - Fade Out Gradient - Unique Subtext",
+  "Subtext - Fade Out Gradient - Unique Text",
+  "Subtext - Fade Out Gradient - Commonly",
+  "Subtext - Fade In Gradient - Unique Subtext",
+  "Subtext - Fade In Gradient - Unique Text",
+  "Subtext - Fade In Gradient - Commonly",
+  "First Character - Solid Color - Unique Subtext",
+  "First Character - Solid Color - Unique Text",
+  "First Character - Solid Color - Commonly",
+  "Whole Text - Emoji",
+  "Subtext - Solid Color - Unique Subtext",
+] as const;
+
 export const QUICK_PICK_ITEMS: QuickPickItem[] = [
   {
     label: "Fade Out Gradient",

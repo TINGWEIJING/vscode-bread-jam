@@ -1,16 +1,23 @@
-import path from "path";
-import { PERMUTATION_TABLE } from "./constant";
-// import fs from "fs";
-import fs from "node:fs/promises";
 import * as vscode from "vscode";
-
-export function isPresent<T>(value: T | null | undefined): boolean {
-  return value !== null && value !== undefined;
-}
-
-export function isTruthy<T>(value: T | null | undefined): boolean {
-  return !!value;
-}
+import { PERMUTATION_TABLE, QUICK_PICK_DESCRIPTIONS } from "./constant";
+import {
+  decorate_firstCharacter_solidColor_commonly,
+  decorate_firstCharacter_solidColor_uniqueSubText,
+  decorate_firstCharacter_solidColor_uniqueText,
+  decorate_subText_fadeInGradient_commonly,
+  decorate_subText_fadeInGradient_uniqueSubText,
+  decorate_subText_fadeInGradient_uniqueText,
+  decorate_subText_fadeOutGradient_commonly,
+  decorate_subText_fadeOutGradient_uniqueSubText,
+  decorate_subText_fadeOutGradient_uniqueText,
+  decorate_subText_solidColor_uniqueSubText,
+  decorate_text_emoji,
+} from "./decorationProcessor";
+import {
+  DecorationProcessor,
+  ExtensionConfig,
+  SemanticCodeToken,
+} from "./type";
 
 /**
  * Pearson hashing algorithm.
@@ -161,11 +168,6 @@ export function rgbToHex(r: number, g: number, b: number): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-// isPeacemakers
-// is1234567890
-// is123
-// is123456
-
 export function colorAlphaMixing(
   color1: string,
   color2: string,
@@ -183,4 +185,143 @@ export function colorAlphaMixing(
   const b = Math.round(rgb1.b * alpha + rgb2.b * (1 - alpha));
 
   return rgbToHex(r, g, b);
+}
+
+export const descriptionToDecorationProcessor: Record<
+  string,
+  DecorationProcessor
+> = {
+  [QUICK_PICK_DESCRIPTIONS[0]]: decorate_subText_fadeOutGradient_uniqueSubText,
+  [QUICK_PICK_DESCRIPTIONS[1]]: decorate_subText_fadeOutGradient_uniqueText,
+  [QUICK_PICK_DESCRIPTIONS[2]]: decorate_subText_fadeOutGradient_commonly,
+  [QUICK_PICK_DESCRIPTIONS[3]]: decorate_subText_fadeInGradient_uniqueSubText,
+  [QUICK_PICK_DESCRIPTIONS[4]]: decorate_subText_fadeInGradient_uniqueText,
+  [QUICK_PICK_DESCRIPTIONS[5]]: decorate_subText_fadeInGradient_commonly,
+  [QUICK_PICK_DESCRIPTIONS[6]]:
+    decorate_firstCharacter_solidColor_uniqueSubText,
+  [QUICK_PICK_DESCRIPTIONS[7]]: decorate_firstCharacter_solidColor_uniqueText,
+  [QUICK_PICK_DESCRIPTIONS[8]]: decorate_firstCharacter_solidColor_commonly,
+  [QUICK_PICK_DESCRIPTIONS[9]]: decorate_text_emoji,
+  [QUICK_PICK_DESCRIPTIONS[10]]: decorate_subText_solidColor_uniqueSubText,
+};
+
+export function buildDebouncedDecorateVariablesFunction(
+  decorationProcessor: DecorationProcessor,
+  extensionConfig: Partial<ExtensionConfig>,
+) {
+  const delay = extensionConfig.renderDelay ?? 500;
+
+  return debounce(async (editor: vscode.TextEditor | undefined) => {
+    if (editor === undefined) {
+      return;
+    }
+
+    console.time("Retrieve raw tokens"); // TODO (WJ): remove
+    const uri = editor.document.uri;
+
+    const [legend, semanticTokens] = await Promise.all([
+      vscode.commands.executeCommand<vscode.SemanticTokensLegend | undefined>(
+        "vscode.provideDocumentSemanticTokensLegend",
+        uri,
+      ),
+      vscode.commands.executeCommand<vscode.SemanticTokens | undefined>(
+        "vscode.provideDocumentSemanticTokens",
+        uri,
+      ),
+    ]);
+    console.timeEnd("Retrieve raw tokens");
+    if (legend === undefined || semanticTokens === undefined) {
+      return;
+    }
+    console.time("Preprocess tokens");
+    const result = decodeSemanticTokensData(
+      legend,
+      semanticTokens.data,
+      editor.document,
+    );
+
+    // filter out the tokens that are not variables
+    const variableTokens = result.filter(
+      (token) =>
+        ["variable", "parameter", "property"].includes(token.tokenType), // TODO (WJ): make into configuration
+    );
+    console.timeEnd("Preprocess tokens");
+
+    console.time("decorate");
+    const [resultDecorationTypes, resultDecorationRange2dArray] =
+      decorationProcessor(variableTokens);
+    for (let i = 0; i < resultDecorationTypes.length; i++) {
+      editor.setDecorations(
+        resultDecorationTypes[i],
+        resultDecorationRange2dArray[i],
+      );
+    }
+    console.timeEnd("decorate");
+  }, delay);
+}
+
+function decodeSemanticTokensData(
+  legend: vscode.SemanticTokensLegend,
+  data: Uint32Array,
+  document: vscode.TextDocument,
+): SemanticCodeToken[] {
+  const documentText = document.getText();
+  const tokens: SemanticCodeToken[] = [];
+  let lineCounter = 0;
+  let characterPositionCounter = 0;
+  for (let i = 0; i < data.length; i += 5) {
+    const deltaLine = data[i];
+    const deltaStart = data[i + 1];
+    const length = data[i + 2];
+    const tokenTypeIndex = data[i + 3];
+    const encodedTokenModifiers = data[i + 4];
+
+    // Calculate the line and start character for the current token
+    if (deltaLine === 0) {
+      // If on the same line, adjust the start character
+      characterPositionCounter += deltaStart;
+    } else {
+      // Move to the new line and set the start character
+      lineCounter += deltaLine;
+      characterPositionCounter = deltaStart;
+    }
+
+    const tokenType = legend.tokenTypes[tokenTypeIndex];
+    const tokenModifiers = decodeTokenModifiers(encodedTokenModifiers, legend);
+    const range = new vscode.Range(
+      lineCounter,
+      characterPositionCounter,
+      lineCounter,
+      characterPositionCounter + length,
+    );
+    tokens.push({
+      line: lineCounter,
+      start: characterPositionCounter,
+      length,
+      tokenType,
+      tokenModifiers,
+      text: documentText.substring(
+        document.offsetAt(range.start),
+        document.offsetAt(range.end),
+      ),
+    });
+  }
+  return tokens;
+}
+
+function decodeTokenModifiers(
+  encodedTokenModifiers: number,
+  legend: vscode.SemanticTokensLegend,
+) {
+  const modifiers = [];
+
+  for (let i = 0; i < legend.tokenModifiers.length; i++) {
+    const mask = 1 << i; // Calculate the bitmask for the current modifier
+    if ((encodedTokenModifiers & mask) === mask) {
+      // If the bitmask is set in tokenModifiers, add the modifier to the list
+      modifiers.push(legend.tokenModifiers[i]);
+    }
+  }
+
+  return modifiers;
 }

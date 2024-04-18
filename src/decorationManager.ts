@@ -1,11 +1,19 @@
 import * as vscode from "vscode";
 import { EMOJIS } from "./constant";
 import { ExtensionConfig } from "./type";
-import { colorAlphaMixing } from "./util";
+import {
+  buildDebouncedDecorateVariablesFunction,
+  colorAlphaMixing,
+} from "./util";
+import { decorate_subText_fadeOutGradient_commonly } from "./decorationProcessor";
 
 class DecorationManager {
   private static instance: DecorationManager;
   public extensionConfig: Partial<ExtensionConfig> = {};
+  public debouncedDecorateVariables: (
+    editor: vscode.TextEditor | undefined,
+  ) => void = () => {};
+
   // public static readonly EXPERIMENT_DECORATION_OPTION: vscode.ThemableDecorationRenderOptions = // TODO (WJ): remove
   //   {
   //     backgroundColor: "rgba(255, 255, 0, 0.3)", // Yellow with transparency
@@ -72,6 +80,12 @@ class DecorationManager {
 
   public static clear() {
     DecorationManager.getInstance().clear();
+  }
+
+  public static debouncedDecorateVariables(
+    editor: vscode.TextEditor | undefined,
+  ) {
+    DecorationManager.getInstance().debouncedDecorateVariables(editor);
   }
 
   private initialize() {
@@ -162,7 +176,14 @@ class DecorationManager {
 
     // TODO (WJ): Initialize semantic token types to gradient common color decoration types
 
+    // Initialize debounced decorate variables function
+    this.debouncedDecorateVariables = buildDebouncedDecorateVariablesFunction(
+      decorate_subText_fadeOutGradient_commonly,
+      this.extensionConfig,
+    );
+
     console.log("Decoration Manager initialized!"); // TODO (WJ): move to output channel
+    console.log(this.extensionConfig); // TODO (WJ): move to output channel
   }
 
   /**
@@ -221,6 +242,9 @@ class DecorationManager {
       }
     }
     this.semanticTokenTypesToGradientCommonColorDecorationTypes = {};
+
+    // Clear debounced decorate variables function
+    this.debouncedDecorateVariables = () => {};
   }
 }
 
