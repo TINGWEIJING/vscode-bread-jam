@@ -1,18 +1,5 @@
 import * as vscode from "vscode";
-import { PERMUTATION_TABLE, QUICK_PICK_DESCRIPTIONS } from "./constant";
-import {
-  decorate_firstCharacter_solidColor_commonly,
-  decorate_firstCharacter_solidColor_uniqueSubText,
-  decorate_firstCharacter_solidColor_uniqueText,
-  decorate_subText_fadeInGradient_commonly,
-  decorate_subText_fadeInGradient_uniqueSubText,
-  decorate_subText_fadeInGradient_uniqueText,
-  decorate_subText_fadeOutGradient_commonly,
-  decorate_subText_fadeOutGradient_uniqueSubText,
-  decorate_subText_fadeOutGradient_uniqueText,
-  decorate_subText_solidColor_uniqueSubText,
-  decorate_text_emoji,
-} from "./decorationProcessor";
+import { PERMUTATION_TABLE } from "./constant";
 import {
   DecorationProcessor,
   ExtensionConfig,
@@ -187,23 +174,63 @@ export function colorAlphaMixing(
   return rgbToHex(r, g, b);
 }
 
-export const descriptionToDecorationProcessor: Record<
-  string,
-  DecorationProcessor
-> = {
-  [QUICK_PICK_DESCRIPTIONS[0]]: decorate_subText_fadeOutGradient_uniqueSubText,
-  [QUICK_PICK_DESCRIPTIONS[1]]: decorate_subText_fadeOutGradient_uniqueText,
-  [QUICK_PICK_DESCRIPTIONS[2]]: decorate_subText_fadeOutGradient_commonly,
-  [QUICK_PICK_DESCRIPTIONS[3]]: decorate_subText_fadeInGradient_uniqueSubText,
-  [QUICK_PICK_DESCRIPTIONS[4]]: decorate_subText_fadeInGradient_uniqueText,
-  [QUICK_PICK_DESCRIPTIONS[5]]: decorate_subText_fadeInGradient_commonly,
-  [QUICK_PICK_DESCRIPTIONS[6]]:
-    decorate_firstCharacter_solidColor_uniqueSubText,
-  [QUICK_PICK_DESCRIPTIONS[7]]: decorate_firstCharacter_solidColor_uniqueText,
-  [QUICK_PICK_DESCRIPTIONS[8]]: decorate_firstCharacter_solidColor_commonly,
-  [QUICK_PICK_DESCRIPTIONS[9]]: decorate_text_emoji,
-  [QUICK_PICK_DESCRIPTIONS[10]]: decorate_subText_solidColor_uniqueSubText,
-};
+/**
+ * A temporary implementation for previewing the decoration.
+ * @param extensionConfig
+ * @returns
+ */
+export function buildPreviewDebouncedDecorateVariablesFunction(
+  extensionConfig: Partial<ExtensionConfig>,
+) {
+  const delay = extensionConfig.renderDelay ?? 500;
+
+  return debounce(
+    async (
+      editor: vscode.TextEditor | undefined,
+      decorationProcessor: DecorationProcessor,
+    ) => {
+      if (editor === undefined) {
+        return;
+      }
+      const uri = editor.document.uri;
+      const [legend, semanticTokens] = await Promise.all([
+        vscode.commands.executeCommand<vscode.SemanticTokensLegend | undefined>(
+          "vscode.provideDocumentSemanticTokensLegend",
+          uri,
+        ),
+        vscode.commands.executeCommand<vscode.SemanticTokens | undefined>(
+          "vscode.provideDocumentSemanticTokens",
+          uri,
+        ),
+      ]);
+
+      if (legend === undefined || semanticTokens === undefined) {
+        return;
+      }
+      const result = decodeSemanticTokensData(
+        legend,
+        semanticTokens.data,
+        editor.document,
+      );
+
+      // filter out the tokens that are not variables
+      const variableTokens = result.filter(
+        (token) =>
+          ["variable", "parameter", "property"].includes(token.tokenType), // TODO (WJ): make into configuration
+      );
+
+      const [resultDecorationTypes, resultDecorationRange2dArray] =
+        decorationProcessor(variableTokens);
+      for (let i = 0; i < resultDecorationTypes.length; i++) {
+        editor.setDecorations(
+          resultDecorationTypes[i],
+          resultDecorationRange2dArray[i],
+        );
+      }
+    },
+    delay,
+  );
+}
 
 export function buildDebouncedDecorateVariablesFunction(
   decorationProcessor: DecorationProcessor,

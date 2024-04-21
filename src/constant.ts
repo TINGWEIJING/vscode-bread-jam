@@ -1,5 +1,19 @@
 import { QuickPickItemKind, type QuickPickItem } from "vscode";
 
+export const EXTENSION_NAME: string = "color-variable-alpha"; // TODO (WJ): update
+
+export const EXTENSION_ID: string = `tingcode.com.${EXTENSION_NAME}`;
+
+export const WORKSPACE_STATE_KEYS = {
+  SELECTED_RENDER_PATTERN: "selectedRenderPattern",
+};
+
+export const EXTENSION_COMMANDS = {
+  PROMPT_RENDER_PATTERN_SELECTION: `${EXTENSION_NAME}.promptRenderPatternSelection`,
+  CLEAR_DECORATIONS_TEMPORARILY: `${EXTENSION_NAME}.clearDecorationsTemporarily`,
+  RELOAD_DECORATIONS: `${EXTENSION_NAME}.reloadDecorations`, // TODO (WJ): update name
+};
+
 // export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from({ length: 256 }, (_, i) => i);
 export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from([
   234, 9, 103, 60, 5, 79, 232, 229, 45, 51, 131, 3, 168, 29, 170, 216, 99, 161,
@@ -20,7 +34,7 @@ export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from([
   255, 62, 70, 189, 6, 57,
 ]);
 
-export const QUICK_PICK_DESCRIPTIONS: string[] = [
+export const RENDER_PATTERN_LABEL: string[] = [
   "Subtext - Fade Out Gradient - Unique Subtext",
   "Subtext - Fade Out Gradient - Unique Text",
   "Subtext - Fade Out Gradient - Commonly",

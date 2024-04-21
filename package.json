@@ -22,22 +22,22 @@
         "title": "Color Variable: Hello World"
       },
       {
-        "command": "colorVariableAlpha.promptRenderPatternSelection",
+        "command": "color-variable-alpha.promptRenderPatternSelection",
         "title": "Color Variable: Select Render Pattern"
       },
       {
-        "command": "colorVariableAlpha.clearDecorationsTemporarily",
+        "command": "color-variable-alpha.clearDecorationsTemporarily",
         "title": "Color Variable: Clear Decorations Temporarily"
       },
       {
-        "command": "colorVariableAlpha.reloadDecorations",
+        "command": "color-variable-alpha.reloadDecorations",
         "title": "Color Variable: Reload Decorations"
       }
     ],
     "configuration": {
       "title": "Color Variable Alpha",
       "properties": {
-        "colorVariableAlpha.fadeInGradientSteps": {
+        "color-variable-alpha.fadeInGradientSteps": {
           "order": 0,
           "type": "array",
           "items": {
@@ -68,7 +68,7 @@
           "maxItems": 16,
           "description": "Gradient steps for fade in."
         },
-        "colorVariableAlpha.renderDelay": {
+        "color-variable-alpha.renderDelay": {
           "order": 0,
           "type": "integer",
           "multipleOf": 10,
@@ -76,13 +76,13 @@
           "default": 500,
           "description": "Delay in milliseconds before rendering the color variable. (Debounce)"
         },
-        "colorVariableAlpha.ignoreFirstSubToken": {
+        "color-variable-alpha.ignoreFirstSubToken": {
           "order": 1,
           "type": "boolean",
           "default": false,
           "markdownDescription": "Ignore the first sub token. Example: ```isTrue; // `is` is ignore```"
         },
-        "colorVariableAlpha.excludeFileExtensions": {
+        "color-variable-alpha.excludeFileExtensions": {
           "order": 2,
           "type": "array",
           "items": {
@@ -91,32 +91,46 @@
           "default": [],
           "description": "Exclude file extensions"
         },
-        "colorVariableAlpha.defaultPattern": {
+        "color-variable-alpha.defaultPattern": {
           "order": 3,
           "type": "string",
-          "default": "01",
+          "default": "Subtext - Fade Out Gradient - Unique Subtext",
           "enum": [
-            "01",
-            "02"
-          ],
-          "enumDescriptions": [
-            "Pattern 01",
-            "Pattern 02"
+            "Subtext - Fade Out Gradient - Unique Subtext",
+            "Subtext - Fade Out Gradient - Unique Text",
+            "Subtext - Fade Out Gradient - Commonly",
+            "Subtext - Fade In Gradient - Unique Subtext",
+            "Subtext - Fade In Gradient - Unique Text",
+            "Subtext - Fade In Gradient - Commonly",
+            "First Character - Solid Color - Unique Subtext",
+            "First Character - Solid Color - Unique Text",
+            "First Character - Solid Color - Commonly",
+            "Whole Text - Emoji",
+            "Subtext - Solid Color - Unique Subtext"
           ],
           "enumItemLabels": [
-            "Unique sub text",
-            "Unique text"
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11"
           ],
           "description": "Default pattern."
         },
-        "colorVariableAlpha.commonColor": {
+        "color-variable-alpha.commonColor": {
           "order": 7,
           "type": "string",
           "default": "#FAFAFA",
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "description": "Common color."
         },
-        "colorVariableAlpha.solidColors": {
+        "color-variable-alpha.solidColors": {
           "order": 5,
           "type": "array",
           "items": {
@@ -133,7 +147,7 @@
           ],
           "description": "Solid colors."
         },
-        "colorVariableAlpha.gradientColors": {
+        "color-variable-alpha.gradientColors": {
           "order": 6,
           "type": "array",
           "items": {
@@ -143,7 +157,7 @@
           "default": [],
           "description": "Gradient colors. Will use solid colors if is empty."
         },
-        "colorVariableAlpha.targetedSemanticTokenTypes": {
+        "color-variable-alpha.targetedSemanticTokenTypes": {
           "order": 5,
           "type": "array",
           "items": {
@@ -181,7 +195,7 @@
           ],
           "description": "Targeted Semantic token types to render."
         },
-        "colorVariableAlpha.targetedSemanticModifiers": {
+        "color-variable-alpha.targetedSemanticModifiers": {
           "order": 5,
           "type": "array",
           "items": {
@@ -213,7 +227,7 @@
           ],
           "description": "Targeted Semantic modifiers to render."
         },
-        "colorVariableAlpha.semanticTokenTypeForegroundColors": {
+        "color-variable-alpha.semanticTokenTypeForegroundColors": {
           "order": 6,
           "type": "object",
           "default": {
@@ -231,7 +245,7 @@
           "additionalProperties": false,
           "description": "Semantic token type foreground colors for fade in/out gradient."
         },
-        "colorVariableAlpha.semanticModifierForegroundColors": {
+        "color-variable-alpha.semanticModifierForegroundColors": {
           "order": 6,
           "type": "object",
           "default": {

@@ -1,17 +1,26 @@
 import * as vscode from "vscode";
-import { EMOJIS } from "./constant";
-import { ExtensionConfig } from "./type";
+import { EMOJIS, EXTENSION_NAME, RENDER_PATTERN_LABEL } from "./constant";
+import {
+  decorate_subText_fadeOutGradient_uniqueSubText,
+  renderPatternToDecorationProcessor,
+} from "./decorationProcessor";
+import { DecorationProcessor, ExtensionConfig } from "./type";
 import {
   buildDebouncedDecorateVariablesFunction,
+  buildPreviewDebouncedDecorateVariablesFunction,
   colorAlphaMixing,
 } from "./util";
-import { decorate_subText_fadeOutGradient_commonly } from "./decorationProcessor";
 
 class DecorationManager {
   private static instance: DecorationManager;
   public extensionConfig: Partial<ExtensionConfig> = {};
+  public currentRenderPattern: string = RENDER_PATTERN_LABEL[0];
   public debouncedDecorateVariables: (
     editor: vscode.TextEditor | undefined,
+  ) => void = () => {};
+  public debouncedPreviewDecorateVariables: (
+    editor: vscode.TextEditor | undefined,
+    decorationProcessor: DecorationProcessor,
   ) => void = () => {};
 
   // public static readonly EXPERIMENT_DECORATION_OPTION: vscode.ThemableDecorationRenderOptions = // TODO (WJ): remove
@@ -74,8 +83,16 @@ class DecorationManager {
     return DecorationManager.instance;
   }
 
+  public static previewRenderPattern(renderPatternLabel: string) {
+    DecorationManager.getInstance().previewRenderPattern(renderPatternLabel);
+  }
+
   public static initialize() {
     DecorationManager.getInstance().initialize();
+  }
+
+  public static cleanDecorations(editor: vscode.TextEditor) {
+    DecorationManager.getInstance().cleanDecorations(editor);
   }
 
   public static clear() {
@@ -88,10 +105,33 @@ class DecorationManager {
     DecorationManager.getInstance().debouncedDecorateVariables(editor);
   }
 
+  private previewRenderPattern(renderPatternLabel: string) {
+    const decorationProcessor =
+      renderPatternToDecorationProcessor[renderPatternLabel];
+
+    if (decorationProcessor === undefined) {
+      throw new Error("Decoration processor not found");
+    }
+
+    const activeEditor = vscode.window.activeTextEditor;
+
+    if (activeEditor !== undefined) {
+      console.log("-> Preview");
+      this.cleanDecorations(activeEditor);
+      this.debouncedPreviewDecorateVariables(activeEditor, decorationProcessor);
+    }
+  }
+
   private initialize() {
-    this.extensionConfig = vscode.workspace
+    const extensionConfig = vscode.workspace
       .getConfiguration()
-      .get<Partial<ExtensionConfig>>("colorVariableAlpha")!; // TODO (WJ): update configuration key
+      .get<Partial<ExtensionConfig>>(EXTENSION_NAME); // TODO (WJ): update configuration key
+    if (this.extensionConfig === undefined) {
+      throw new Error("Unable to read configuration.");
+      // TODO (WJ): add notification
+    }
+
+    this.extensionConfig = extensionConfig!;
     const solidColors = this.extensionConfig.solidColors ?? [];
     let gradientColors = this.extensionConfig.gradientColors;
     if (gradientColors === undefined || gradientColors.length === 0) {
@@ -177,13 +217,69 @@ class DecorationManager {
     // TODO (WJ): Initialize semantic token types to gradient common color decoration types
 
     // Initialize debounced decorate variables function
+    this.currentRenderPattern =
+      this.extensionConfig.defaultPattern ?? RENDER_PATTERN_LABEL[0]; // TODO (WJ): read from workspace state
+    const decorationProcessor =
+      renderPatternToDecorationProcessor[this.currentRenderPattern] ??
+      decorate_subText_fadeOutGradient_uniqueSubText;
     this.debouncedDecorateVariables = buildDebouncedDecorateVariablesFunction(
-      decorate_subText_fadeOutGradient_commonly,
+      decorationProcessor,
       this.extensionConfig,
     );
 
+    // Initialize preview debounce decoration variables function
+    this.debouncedPreviewDecorateVariables =
+      buildPreviewDebouncedDecorateVariablesFunction(this.extensionConfig);
+
     console.log("Decoration Manager initialized!"); // TODO (WJ): move to output channel
     console.log(this.extensionConfig); // TODO (WJ): move to output channel
+  }
+
+  private cleanDecorations(editor: vscode.TextEditor) {
+    // Clean emoji decoration types
+    for (const decorationType of this.emojiDecorationTypes) {
+      editor.setDecorations(decorationType, []);
+    }
+
+    // Clean solid color decoration types
+    for (const decorationType of this.solidColorDecorationTypes) {
+      editor.setDecorations(decorationType, []);
+    }
+
+    // Clean solid common color decoration type
+    editor.setDecorations(this.solidCommonColorDecorationType, []);
+
+    // Clean gradient color decoration types
+    for (const decorationTypeArray of this.gradientColorDecorationType2dArray) {
+      for (const decorationType of decorationTypeArray) {
+        editor.setDecorations(decorationType, []);
+      }
+    }
+
+    // Clean gradient common color decoration types
+    for (const decorationType of this.gradientCommonColorDecorationTypes) {
+      editor.setDecorations(decorationType, []);
+    }
+
+    // Clean semantic token types to gradient color decoration types
+    for (const key in this
+      .semanticTokenTypesToGradientColorDecorationType2dArray) {
+      for (const decorationTypeArray of this
+        .semanticTokenTypesToGradientColorDecorationType2dArray[key]) {
+        for (const decorationType of decorationTypeArray) {
+          editor.setDecorations(decorationType, []);
+        }
+      }
+    }
+
+    // Clean semantic token types to gradient common color decoration types
+    for (const key in this
+      .semanticTokenTypesToGradientCommonColorDecorationTypes) {
+      for (const decorationType of this
+        .semanticTokenTypesToGradientCommonColorDecorationTypes[key]) {
+        editor.setDecorations(decorationType, []);
+      }
+    }
   }
 
   /**
@@ -245,6 +341,9 @@ class DecorationManager {
 
     // Clear debounced decorate variables function
     this.debouncedDecorateVariables = () => {};
+
+    // Clear preview debounce decoration variables function
+    this.debouncedPreviewDecorateVariables = () => {};
   }
 }
 

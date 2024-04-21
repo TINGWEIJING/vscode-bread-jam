@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import DecorationManager from "./decorationManager";
-import { SemanticCodeToken } from "./type";
+import { DecorationProcessor, SemanticCodeToken } from "./type";
 import { getPointerArray, pearsonHash, scaleHash, splitString } from "./util";
+import { RENDER_PATTERN_LABEL } from "./constant";
 
 /* Variable naming / Term
  * - text
@@ -11,6 +12,23 @@ import { getPointerArray, pearsonHash, scaleHash, splitString } from "./util";
  * - *2dArray
  * - *3dArray
  */
+
+export const renderPatternToDecorationProcessor: Record<
+  string,
+  DecorationProcessor | undefined
+> = {
+  [RENDER_PATTERN_LABEL[0]]: decorate_subText_fadeOutGradient_uniqueSubText,
+  [RENDER_PATTERN_LABEL[1]]: decorate_subText_fadeOutGradient_uniqueText,
+  [RENDER_PATTERN_LABEL[2]]: decorate_subText_fadeOutGradient_commonly,
+  [RENDER_PATTERN_LABEL[3]]: decorate_subText_fadeInGradient_uniqueSubText,
+  [RENDER_PATTERN_LABEL[4]]: decorate_subText_fadeInGradient_uniqueText,
+  [RENDER_PATTERN_LABEL[5]]: decorate_subText_fadeInGradient_commonly,
+  [RENDER_PATTERN_LABEL[6]]: decorate_firstCharacter_solidColor_uniqueSubText,
+  [RENDER_PATTERN_LABEL[7]]: decorate_firstCharacter_solidColor_uniqueText,
+  [RENDER_PATTERN_LABEL[8]]: decorate_firstCharacter_solidColor_commonly,
+  [RENDER_PATTERN_LABEL[9]]: decorate_text_emoji,
+  [RENDER_PATTERN_LABEL[10]]: decorate_subText_solidColor_uniqueSubText,
+};
 
 /**
  * 01. Whole sub text with fade out gradient color by hash for unique sub text
@@ -319,7 +337,6 @@ export function decorate_subText_fadeInGradient_uniqueText(
         }
         gradientLevel =
           selectedGradientColorDecorationTypes.length - gradientLevel - 1;
-        console.log("🚀 ~ gradientLevel:", gradientLevel);
         const range = new vscode.Range(
           token.line,
           subTextStartCounter + indexThree,
