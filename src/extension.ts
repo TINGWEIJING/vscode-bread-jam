@@ -13,9 +13,7 @@ export async function activate(context: vscode.ExtensionContext) {
   console.log(
     'Congratulations, your extension "color-variable-alpha" is now active!',
   );
-  DecorationManager.initialize(); // TODO (WJ): make sure this only call once in codebase
-  // TODO (WJ): accept context as parameter
-  // TODO (WJ): create reset function
+  DecorationManager.initialize(context);
 
   let disposable = vscode.commands.registerCommand(
     // TODO (WJ): remove
@@ -29,14 +27,14 @@ export async function activate(context: vscode.ExtensionContext) {
   let promptRenderPatternSelectionCommand = vscode.commands.registerCommand(
     EXTENSION_COMMANDS.PROMPT_RENDER_PATTERN_SELECTION,
     () => {
-      const currentRenderPatternLabel = context.workspaceState.get<
+      const currentRenderPattern = context.workspaceState.get<
         string | undefined
       >(WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN);
 
       const quickPick = vscode.window.createQuickPick();
       quickPick.items = QUICK_PICK_ITEMS.map((item) => ({
         ...item,
-        picked: item.description === currentRenderPatternLabel,
+        picked: item.description === currentRenderPattern,
       }));
       quickPick.matchOnDetail = true;
       quickPick.matchOnDescription = true;
@@ -74,7 +72,12 @@ export async function activate(context: vscode.ExtensionContext) {
       quickPick.onDidHide((e) => {
         console.log("🚀 ~ quickPick.onDidHide ~ e:", e);
         DecorationManager.clear();
-        DecorationManager.initialize();
+        DecorationManager.initialize(context);
+        const activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor !== undefined) {
+          console.log("-> Render Pattern Selection Confirmed");
+          DecorationManager.debouncedDecorateVariables(activeEditor);
+        }
         quickPick.dispose();
       });
       quickPick.show();

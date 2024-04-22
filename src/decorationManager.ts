@@ -1,9 +1,11 @@
 import * as vscode from "vscode";
-import { EMOJIS, EXTENSION_NAME, RENDER_PATTERN_LABEL } from "./constant";
 import {
-  decorate_subText_fadeOutGradient_uniqueSubText,
-  renderPatternToDecorationProcessor,
-} from "./decorationProcessor";
+  EMOJIS,
+  EXTENSION_NAME,
+  RENDER_PATTERN_LABEL,
+  WORKSPACE_STATE_KEYS,
+} from "./constant";
+import { renderPatternToDecorationProcessor } from "./decorationProcessor";
 import { DecorationProcessor, ExtensionConfig } from "./type";
 import {
   buildDebouncedDecorateVariablesFunction,
@@ -87,8 +89,8 @@ class DecorationManager {
     DecorationManager.getInstance().previewRenderPattern(renderPatternLabel);
   }
 
-  public static initialize() {
-    DecorationManager.getInstance().initialize();
+  public static initialize(context?: vscode.ExtensionContext) {
+    DecorationManager.getInstance().initialize(context);
   }
 
   public static cleanDecorations(editor: vscode.TextEditor) {
@@ -99,9 +101,7 @@ class DecorationManager {
     DecorationManager.getInstance().clear();
   }
 
-  public static debouncedDecorateVariables(
-    editor: vscode.TextEditor | undefined,
-  ) {
+  public static debouncedDecorateVariables(editor?: vscode.TextEditor) {
     DecorationManager.getInstance().debouncedDecorateVariables(editor);
   }
 
@@ -122,16 +122,33 @@ class DecorationManager {
     }
   }
 
-  private initialize() {
+  private initialize(context?: vscode.ExtensionContext) {
     const extensionConfig = vscode.workspace
       .getConfiguration()
       .get<Partial<ExtensionConfig>>(EXTENSION_NAME); // TODO (WJ): update configuration key
-    if (this.extensionConfig === undefined) {
+    if (extensionConfig === undefined) {
       throw new Error("Unable to read configuration.");
       // TODO (WJ): add notification
     }
 
-    this.extensionConfig = extensionConfig!;
+    this.extensionConfig = extensionConfig;
+
+    // Update current render pattern only when context is provided
+    if (context !== undefined) {
+      const workspaceStateRenderPattern = context.workspaceState.get<
+        string | undefined
+      >(WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN);
+
+      if (workspaceStateRenderPattern !== undefined) {
+        this.currentRenderPattern = workspaceStateRenderPattern;
+      } else {
+        context.workspaceState.update(
+          WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
+          this.currentRenderPattern,
+        );
+      }
+    }
+
     const solidColors = this.extensionConfig.solidColors ?? [];
     let gradientColors = this.extensionConfig.gradientColors;
     if (gradientColors === undefined || gradientColors.length === 0) {
@@ -217,11 +234,11 @@ class DecorationManager {
     // TODO (WJ): Initialize semantic token types to gradient common color decoration types
 
     // Initialize debounced decorate variables function
-    this.currentRenderPattern =
-      this.extensionConfig.defaultPattern ?? RENDER_PATTERN_LABEL[0]; // TODO (WJ): read from workspace state
     const decorationProcessor =
-      renderPatternToDecorationProcessor[this.currentRenderPattern] ??
-      decorate_subText_fadeOutGradient_uniqueSubText;
+      renderPatternToDecorationProcessor[this.currentRenderPattern];
+    if (decorationProcessor === undefined) {
+      throw new Error("Decoration processor not found"); // TODO (WJ): add notification
+    }
     this.debouncedDecorateVariables = buildDebouncedDecorateVariablesFunction(
       decorationProcessor,
       this.extensionConfig,

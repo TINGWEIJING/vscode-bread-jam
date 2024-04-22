@@ -37,6 +37,37 @@
     "configuration": {
       "title": "Color Variable Alpha",
       "properties": {
+        "color-variable-alpha.fadeOutGradientSteps": {
+          "order": 0,
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "multipleOf": 0.01,
+          "minimum": 0,
+          "maximum": 1,
+          "default": [
+            0,
+            0.07,
+            0.13,
+            0.2,
+            0.27,
+            0.33,
+            0.4,
+            0.47,
+            0.53,
+            0.6,
+            0.67,
+            0.73,
+            0.8,
+            0.87,
+            0.93,
+            1
+          ],
+          "minItems": 16,
+          "maxItems": 16,
+          "description": "Gradient steps for fade in."
+        },
         "color-variable-alpha.fadeInGradientSteps": {
           "order": 0,
           "type": "array",
@@ -89,6 +120,7 @@
             "type": "string"
           },
           "default": [],
+          "uniqueItems": true,
           "description": "Exclude file extensions"
         },
         "color-variable-alpha.defaultPattern": {
@@ -193,6 +225,7 @@
             "parameter",
             "property"
           ],
+          "uniqueItems": true,
           "description": "Targeted Semantic token types to render."
         },
         "color-variable-alpha.targetedSemanticModifiers": {
@@ -225,6 +258,7 @@
             "documentation",
             "defaultLibrary"
           ],
+          "uniqueItems": true,
           "description": "Targeted Semantic modifiers to render."
         },
         "color-variable-alpha.semanticTokenTypeForegroundColors": {
