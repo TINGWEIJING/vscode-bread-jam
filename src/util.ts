@@ -44,9 +44,6 @@ function shuffleArray(array: Uint8Array) {
 }
 
 export function splitString(input: string) {
-  // Normalize the string: replace underscores, double underscores, hyphens, and em dashes with spaces
-  // let normalized = input.replace(/[_-]+/g, " ");
-
   const regexPattern = [
     "(_+)", // Matches one or more underscores as a single group
     "(-+)", // Matches hyphens
@@ -110,7 +107,9 @@ export async function readJsonFileInAssets<T = any>( // TODO (WJ): remove
 }
 
 export function getPointerArray(length: number) {
-  if (length <= 4) {
+  if (length <= 2) {
+    return [4, 6];
+  } else if (length <= 4) {
     return [0, 5, 10, 15];
   } else if (length <= 8) {
     return [0, 2, 4, 6, 9, 11, 13, 15];
