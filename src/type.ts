@@ -2,7 +2,14 @@ import * as vscode from "vscode";
 
 export type DecorationProcessor = (
   codeTokens: SemanticCodeToken[],
+  decorationManager?: IDecorationManager,
 ) => [vscode.TextEditorDecorationType[], vscode.Range[][]];
+
+export interface IDecorationManager {
+  solidColorDecorationTypes: vscode.TextEditorDecorationType[];
+  solidCommonColorDecorationType: vscode.TextEditorDecorationType;
+  emojiDecorationTypes: vscode.TextEditorDecorationType[];
+}
 
 export interface SemanticCodeToken {
   line: number; // zero-based
@@ -24,5 +31,5 @@ export interface ExtensionConfig {
   commonColor: string;
   fadeInGradientSteps: number[];
   targetedSemanticTokenTypes: string[];
-  semanticTokenTypeForegroundColors: { [key: string]: string };
+  semanticForegroundColors: { [key: string]: string };
 }

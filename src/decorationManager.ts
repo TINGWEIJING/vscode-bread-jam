@@ -6,14 +6,21 @@ import {
   WORKSPACE_STATE_KEYS,
 } from "./constant";
 import { renderPatternToDecorationProcessor } from "./decorationProcessor";
-import { DecorationProcessor, ExtensionConfig } from "./type";
+import type {
+  DecorationProcessor,
+  ExtensionConfig,
+  IDecorationManager,
+} from "./type";
 import {
   buildDebouncedDecorateVariablesFunction,
   buildPreviewDebouncedDecorateVariablesFunction,
+  buildSemanticKey,
   colorAlphaMixing,
+  flattenComplexArray,
+  parseSemanticCode,
 } from "./util";
 
-class DecorationManager {
+class DecorationManager implements IDecorationManager {
   private static instance: DecorationManager;
   public extensionConfig: Partial<ExtensionConfig> = {};
   public currentRenderPattern: string = RENDER_PATTERN_LABEL[0];
@@ -69,9 +76,12 @@ class DecorationManager {
     [];
   public gradientColorDecorationType2dArray: vscode.TextEditorDecorationType[][] =
     [];
-  public semanticTokenTypesToGradientColorDecorationType2dArray: {
-    [key: string]: vscode.TextEditorDecorationType[][];
-  } = {};
+  public semanticToFadeInGradientColorDecorationType2dArray = new Map<
+    string,
+    vscode.TextEditorDecorationType[][]
+  >();
+  public flatFadeInGradientColorDecorationTypes: vscode.TextEditorDecorationType[] =
+    [];
   public semanticTokenTypesToGradientCommonColorDecorationTypes: {
     [key: string]: vscode.TextEditorDecorationType[];
   } = {};
@@ -103,6 +113,23 @@ class DecorationManager {
 
   public static debouncedDecorateVariables(editor?: vscode.TextEditor) {
     DecorationManager.getInstance().debouncedDecorateVariables(editor);
+  }
+
+  public getGradientColorDecorationType2dArray(
+    tokenType: string,
+    modifiers: string[],
+  ) {
+    const key = buildSemanticKey(tokenType, modifiers);
+    let decorationType2dArray =
+      this.semanticToFadeInGradientColorDecorationType2dArray.get(key);
+    if (decorationType2dArray === undefined) {
+      this.semanticToFadeInGradientColorDecorationType2dArray.get(tokenType);
+    }
+    if (decorationType2dArray === undefined) {
+      decorationType2dArray = this.gradientColorDecorationType2dArray;
+    }
+
+    return decorationType2dArray;
   }
 
   private previewRenderPattern(renderPatternLabel: string) {
@@ -229,7 +256,62 @@ class DecorationManager {
       }
     }
 
-    // TODO (WJ): Initialize semantic token types to gradient color decoration types
+    // TODO (WJ): Initialize semantic to gradient color decoration types
+    const semanticForegroundColors =
+      this.extensionConfig.semanticForegroundColors || {};
+
+    const fadeInGradientSteps = this.extensionConfig.fadeInGradientSteps || [];
+    for (const semanticCode in semanticForegroundColors) {
+      const foregroundColor = semanticForegroundColors[semanticCode];
+      const [tokenType, modifiers] = parseSemanticCode(semanticCode);
+      if (tokenType === null) {
+        continue;
+      }
+      const semanticKey = buildSemanticKey(tokenType, modifiers);
+
+      // each gradient color
+      const gradientColorDecorationType2dArray = Array.from<
+        vscode.TextEditorDecorationType,
+        vscode.TextEditorDecorationType[]
+      >({ length: gradientColors.length }, () => []);
+      for (
+        let colorIndex = 0;
+        colorIndex < gradientColors.length;
+        colorIndex++
+      ) {
+        // each alpha value
+        for (
+          let stepIndex = 0;
+          stepIndex < fadeInGradientSteps.length;
+          stepIndex++
+        ) {
+          const alpha = fadeInGradientSteps[stepIndex];
+          const mixedColor = colorAlphaMixing(
+            gradientColors[colorIndex],
+            foregroundColor,
+            alpha,
+          );
+          if (mixedColor === null) {
+            throw new Error("Mixed color is null");
+          }
+          const colorDecorationOption: vscode.ThemableDecorationRenderOptions =
+            {
+              color: mixedColor,
+            };
+          gradientColorDecorationType2dArray[colorIndex].push(
+            vscode.window.createTextEditorDecorationType(colorDecorationOption),
+          );
+        }
+      }
+
+      this.semanticToFadeInGradientColorDecorationType2dArray.set(
+        semanticKey,
+        gradientColorDecorationType2dArray,
+      );
+    }
+    this.flatFadeInGradientColorDecorationTypes = flattenComplexArray(
+      this.semanticToFadeInGradientColorDecorationType2dArray,
+    );
 
     // TODO (WJ): Initialize semantic token types to gradient common color decoration types
 
@@ -241,6 +323,7 @@ class DecorationManager {
     }
     this.debouncedDecorateVariables = buildDebouncedDecorateVariablesFunction(
       decorationProcessor,
+      this,
       this.extensionConfig,
     );
 
@@ -278,11 +361,10 @@ class DecorationManager {
       editor.setDecorations(decorationType, []);
     }
 
-    // Clean semantic token types to gradient color decoration types
-    for (const key in this
-      .semanticTokenTypesToGradientColorDecorationType2dArray) {
-      for (const decorationTypeArray of this
-        .semanticTokenTypesToGradientColorDecorationType2dArray[key]) {
+    // Clean semantic to gradient color decoration types
+    for (const [_, value] of this
+      .semanticToFadeInGradientColorDecorationType2dArray) {
+      for (const decorationTypeArray of value) {
         for (const decorationType of decorationTypeArray) {
           editor.setDecorations(decorationType, []);
         }
@@ -334,17 +416,16 @@ class DecorationManager {
     }
     this.gradientCommonColorDecorationTypes = [];
 
-    // Clear semantic token types to gradient color decoration types
-    for (const key in this
-      .semanticTokenTypesToGradientColorDecorationType2dArray) {
-      for (const decorationTypeArray of this
-        .semanticTokenTypesToGradientColorDecorationType2dArray[key]) {
+    // Clear semantic to gradient color decoration types
+    for (const [_, value] of this
+      .semanticToFadeInGradientColorDecorationType2dArray) {
+      for (const decorationTypeArray of value) {
         for (const decorationType of decorationTypeArray) {
           decorationType.dispose();
         }
       }
     }
-    this.semanticTokenTypesToGradientColorDecorationType2dArray = {};
+    this.semanticToFadeInGradientColorDecorationType2dArray.clear();
 
     // Clear semantic token types to gradient common color decoration types
     for (const key in this

@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
-import { PERMUTATION_TABLE } from "./constant";
-import {
+import { PERMUTATION_TABLE, REGEX_LITERAL } from "./constant";
+import type {
   DecorationProcessor,
   ExtensionConfig,
+  IDecorationManager,
   SemanticCodeToken,
 } from "./type";
 
@@ -44,24 +45,45 @@ function shuffleArray(array: Uint8Array) {
 }
 
 export function splitString(input: string) {
-  const regexPattern = [
-    "(_+)", // Matches one or more underscores as a single group
-    "(-+)", // Matches hyphens
-    "(—+)", // Matches em dashes
-    "(?<=[a-z])(?=[A-Z])", // Lowercase to uppercase transition for camelCase
-    "(?<=[A-Z])(?=[A-Z][a-z])", // Uppercase sequence followed by a lowercase letter
-    "(?<=[A-Za-z])(?=\\d)", // Letter to digit transition
-    "(?<=\\d)(?=[A-Za-z])", // Digit to letter transition
-  ].join("|"); // Join parts with OR operator
-
-  const regex = new RegExp(regexPattern, "g");
-
-  let splitTokens = input.split(regex);
+  let splitTokens = input.split(REGEX_LITERAL.SPLIT_TOKEN);
 
   // Filter out any empty strings that might result from consecutive delimiters or leading/trailing spaces
   splitTokens = splitTokens.filter(Boolean);
 
   return splitTokens;
+}
+
+export function parseSemanticCode(
+  semanticCode: string,
+): [string | null, string[]] {
+  const match = semanticCode.match(REGEX_LITERAL.SEMANTIC_CODE);
+  if (match !== null) {
+    const tokenType = match[1];
+    const modifiers = match[2] ? match[2].split(/,\s*/) : [];
+    return [tokenType, modifiers];
+  }
+  return [null, []];
+}
+
+export function buildSemanticKey(
+  tokenType: string,
+  modifiers: string[],
+): string {
+  if (modifiers.length === 0) {
+    return tokenType;
+  }
+  return `${tokenType}:${modifiers.sort().join(",")}`;
+}
+
+export function flattenComplexArray(
+  mapArray: Map<string, vscode.TextEditorDecorationType[][]>,
+): vscode.TextEditorDecorationType[] {
+  // TODO (WJ): not perfect
+  let flattenedArray: vscode.TextEditorDecorationType[] = [];
+  for (let arrays of mapArray.values()) {
+    flattenedArray.push(...arrays.flat());
+  }
+  return flattenedArray;
 }
 
 /**
@@ -233,6 +255,7 @@ export function buildPreviewDebouncedDecorateVariablesFunction(
 
 export function buildDebouncedDecorateVariablesFunction(
   decorationProcessor: DecorationProcessor,
+  decorationManager: IDecorationManager,
   extensionConfig: Partial<ExtensionConfig>,
 ) {
   const delay = extensionConfig.renderDelay ?? 500;
@@ -275,7 +298,7 @@ export function buildDebouncedDecorateVariablesFunction(
 
     console.time("decorate");
     const [resultDecorationTypes, resultDecorationRange2dArray] =
-      decorationProcessor(variableTokens);
+      decorationProcessor(variableTokens, decorationManager);
     for (let i = 0; i < resultDecorationTypes.length; i++) {
       editor.setDecorations(
         resultDecorationTypes[i],

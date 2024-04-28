@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import DecorationManager from "./decorationManager";
+import DecorationManager from "./decorationManager"; // TODO (WJ): solve circular dependency
 import { DecorationProcessor, SemanticCodeToken } from "./type";
 import { getPointerArray, pearsonHash, scaleHash, splitString } from "./util";
-import { RENDER_PATTERN_LABEL } from "./constant";
+import { REGEX_LITERAL, RENDER_PATTERN_LABEL } from "./constant";
 
 /* Variable naming / Term
  * - text
@@ -59,7 +59,7 @@ export function decorate_subText_fadeOutGradient_uniqueSubText(
       const subTextLength = subText.length;
       if (
         (ignoreFirstSubToken && indexTwo === 0) ||
-        subText.charAt(0) === "_"
+        subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
@@ -136,7 +136,7 @@ export function decorate_subText_fadeOutGradient_uniqueText(
       const subTextLength = subText.length;
       if (
         (ignoreFirstSubToken && indexTwo === 0) ||
-        subText.charAt(0) === "_"
+        subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
@@ -198,7 +198,7 @@ export function decorate_subText_fadeOutGradient_commonly(
       const subTextLength = subText.length;
       if (
         (ignoreFirstSubToken && indexTwo === 0) ||
-        subText.charAt(0) === "_"
+        subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
@@ -257,7 +257,7 @@ export function decorate_subText_fadeInGradient_uniqueSubText(
       const subTextLength = subText.length;
       if (
         (ignoreFirstSubToken && indexTwo === 0) ||
-        subText.charAt(0) === "_"
+        subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
@@ -336,7 +336,7 @@ export function decorate_subText_fadeInGradient_uniqueText(
       const subTextLength = subText.length;
       if (
         (ignoreFirstSubToken && indexTwo === 0) ||
-        subText.charAt(0) === "_"
+        subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
@@ -400,7 +400,7 @@ export function decorate_subText_fadeInGradient_commonly(
       const subTextLength = subText.length;
       if (
         (ignoreFirstSubToken && indexTwo === 0) ||
-        subText.charAt(0) === "_"
+        subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
@@ -460,7 +460,7 @@ export function decorate_firstCharacter_solidColor_uniqueSubText(
       const subTextLength = subText.length;
       if (
         (ignoreFirstSubToken && indexTwo === 0) ||
-        subText.charAt(0) === "_"
+        subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
@@ -516,7 +516,7 @@ export function decorate_firstCharacter_solidColor_uniqueText(
     for (let indexTwo = 0; indexTwo < subTextArr.length; indexTwo++) {
       const subText = subTextArr[indexTwo];
       const subTextLength = subText.length;
-      if (subText.charAt(0) === "_") {
+      if (subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
         continue;
@@ -563,7 +563,7 @@ export function decorate_firstCharacter_solidColor_commonly(
       const subTextLength = subText.length;
       if (
         (ignoreFirstSubToken && indexTwo === 0) ||
-        subText.charAt(0) === "_"
+        subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
@@ -649,7 +649,7 @@ export function decorate_subText_solidColor_uniqueSubText(
       const subTextLength = subText.length;
       if (
         (ignoreFirstSubToken && indexTwo === 0) ||
-        subText.charAt(0) === "_"
+        subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
         // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;

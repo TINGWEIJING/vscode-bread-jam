@@ -120,6 +120,42 @@ export const ALPHA_MIXING_VALUES: number[] = [
   0.99, 1, 1, 1, 1, 1, 1,
 ];
 
+export const REGEX_LITERAL = {
+  /**
+   * Matches semantic code with optional modifiers.
+   *
+   * - `^`: Asserts the start of the string.
+   * - `(\w+)`: Captures the variable name. \w+ matches one or more word characters.
+   * - `(?:...)`: A non-capturing group, used to group parts of the pattern.
+   * - `:`: Matches the literal colon character, indicating the start of the modifiers.
+   * - `(\w+(?:,\s*\w+)*)`: Captures the modifiers. This part:
+   *     - `\w+`: Matches one or more word characters (the first modifier).
+   *     - `(?:,\s*\w+)*`: A non-capturing group that matches zero or more occurrences of additional modifiers, allowing for optional spaces after commas.
+   * - `?`: Makes the entire group of : and the following modifiers optional.
+   * - `$`: Asserts the end of the string.
+   */
+  SEMANTIC_CODE: /^(\w+)(?::(\w+(?:,\s*\w+)*))?$/,
+
+  /**
+   * Matches various tokens in a string.
+   *
+   * - `(_+)`: Matches one or more underscores.
+   * - `(-+)`: Matches one or more hyphens.
+   * - `(—+)`: Matches one or more em dashes.
+   * - `(\.+)`: Matches one or more periods.
+   * - `(\/+)`: Matches one or more forward slashes.
+   * - `(\\+)`: Matches one or more backslashes.
+   * - `(:+)`: Matches one or more colons.
+   * - `(?<=[a-z])(?=[A-Z])`: Matches a position where a lowercase letter is followed by an uppercase letter.
+   * - `(?<=[A-Z])(?=[A-Z][a-z])`: Matches a position where an uppercase letter is followed by an uppercase letter and a lowercase letter.
+   * - `(?<=[A-Za-z])(?=\d)`: Matches a position where a letter is followed by a digit.
+   * - `(?<=\d)(?=[A-Za-z])`: Matches a position where a digit is followed by a letter.
+   */
+  SPLIT_TOKEN:
+    /(_+)|(-+)|(—+)|(\.+)|(\/+)|(\\+)|(:+)|(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=\d)|(?<=\d)(?=[A-Za-z])/g,
+  UNWANTED_CHARACTERS: /[_\-—\.\/\\:]+/g,
+};
+
 export const EMOJIS: string[] = [
   "😀",
   "😃",
