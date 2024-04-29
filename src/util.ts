@@ -86,6 +86,15 @@ export function flattenComplexArray(
   return flattenedArray;
 }
 
+export function initializeEmptyRange3dArray(
+  rows: number,
+  cols: number,
+): vscode.Range[][][] {
+  return Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => []),
+  );
+}
+
 /**
  * https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
  */

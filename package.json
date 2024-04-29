@@ -186,7 +186,14 @@
             "type": "string",
             "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
           },
-          "default": [],
+          "default": [
+            "#d4b300",
+            "#6d8891",
+            "#886288",
+            "#c5eff7",
+            "#c8f7c5",
+            "#7fffd4"
+          ],
           "description": "Gradient colors. Will use solid colors if is empty."
         },
         "color-variable-alpha.targetedSemanticTokenTypes": {
@@ -265,9 +272,12 @@
           "order": 6,
           "type": "object",
           "default": {
-            "variable": "#000000",
-            "parameter": "#000000",
-            "property": "#000000"
+            "variable": "#9CDCFE",
+            "variable:readonly": "#4FC1FF",
+            "variable:declaration,readonly": "#4FC1FF",
+            "variable:declaration,readonly,local": "#4FC1FF",
+            "parameter": "#9CDCFE",
+            "property": "#9CDCFE"
           },
           "patternProperties": {
             "^[a-zA-Z]+(?:[a-zA-Z0-9]*)(?::[a-zA-Z0-9]+(?:,[a-zA-Z0-9]+)*)?$": {

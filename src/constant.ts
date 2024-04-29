@@ -14,6 +14,8 @@ export const EXTENSION_COMMANDS = {
   RELOAD_DECORATIONS: `${EXTENSION_NAME}.reloadDecorations`, // TODO (WJ): update name
 };
 
+export const DEFAULT_SEMANTIC_KEY = "default";
+
 // export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from({ length: 256 }, (_, i) => i);
 export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from([
   234, 9, 103, 60, 5, 79, 232, 229, 45, 51, 131, 3, 168, 29, 170, 216, 99, 161,

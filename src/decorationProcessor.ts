@@ -1,8 +1,14 @@
 import * as vscode from "vscode";
+import { REGEX_LITERAL, RENDER_PATTERN_LABEL } from "./constant";
 import DecorationManager from "./decorationManager"; // TODO (WJ): solve circular dependency
 import { DecorationProcessor, SemanticCodeToken } from "./type";
-import { getPointerArray, pearsonHash, scaleHash, splitString } from "./util";
-import { REGEX_LITERAL, RENDER_PATTERN_LABEL } from "./constant";
+import {
+  getPointerArray,
+  initializeEmptyRange3dArray,
+  pearsonHash,
+  scaleHash,
+  splitString,
+} from "./util";
 
 /* Variable naming / Term
  * - text
@@ -61,7 +67,6 @@ export function decorate_subText_fadeOutGradient_uniqueSubText(
         (ignoreFirstSubToken && indexTwo === 0) ||
         subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
-        // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
         continue;
       }
@@ -235,42 +240,51 @@ export function decorate_subText_fadeInGradient_uniqueSubText(
   codeTokens: SemanticCodeToken[],
 ): [vscode.TextEditorDecorationType[], vscode.Range[][]] {
   const decorationManager = DecorationManager.getInstance();
-  const gradientColorDecorationType2dArray =
-    decorationManager.gradientColorDecorationType2dArray;
   const ignoreFirstSubToken =
     decorationManager.extensionConfig.ignoreFirstSubToken;
 
-  const decorationRange3dArray: vscode.Range[][][] = Array.from(
-    gradientColorDecorationType2dArray,
-    (subArray) => Array.from(subArray, () => []),
-  );
+  // TODO (WJ): calculated in decorationManager
+  const rows = decorationManager.extensionConfig.gradientColors?.length ?? 1;
+  const cols =
+    decorationManager.extensionConfig.fadeInGradientSteps?.length ?? 16;
+  const semanticToRange3dArray: Map<string, vscode.Range[][][]> = new Map();
+  const semanticToDecorationType2dArray =
+    decorationManager.semanticToFadeInGradientColorDecorationType2dArray;
+
   // each token
-  for (let i = 0; i < codeTokens.length; i++) {
-    const token = codeTokens[i];
+  for (let tokenIndex = 0; tokenIndex < codeTokens.length; tokenIndex++) {
+    const token = codeTokens[tokenIndex];
     const text = token.text;
+    const tokenType = token.tokenType;
+    const modifiers = token.tokenModifiers;
     let subTextStartCounter = token.start;
+    const [key, selectedDecorationType2dArray] =
+      decorationManager.getKeyAndFadeInGradientColorDecorationType2dArray(
+        tokenType,
+        modifiers,
+      );
 
     // each subText
     const subTextArr = splitString(text);
-    for (let indexTwo = 0; indexTwo < subTextArr.length; indexTwo++) {
-      const subText = subTextArr[indexTwo];
+    for (
+      let subTextIndex = 0;
+      subTextIndex < subTextArr.length;
+      subTextIndex++
+    ) {
+      const subText = subTextArr[subTextIndex];
       const subTextLength = subText.length;
       if (
-        (ignoreFirstSubToken && indexTwo === 0) ||
+        (ignoreFirstSubToken && subTextIndex === 0) ||
         subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
-        // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
         continue;
       }
 
       const pearsonHashValue = pearsonHash(subText);
-      const scaledHashValue = scaleHash(
-        pearsonHashValue,
-        gradientColorDecorationType2dArray.length - 1,
-      );
-      const selectedGradientColorDecorationTypes =
-        gradientColorDecorationType2dArray[scaledHashValue];
+      const scaledHashValue = scaleHash(pearsonHashValue, rows - 1);
+      const selectedColorDecorationTypes =
+        selectedDecorationType2dArray[scaledHashValue];
 
       // each character
       const pointerArray = getPointerArray(subTextLength);
@@ -278,9 +292,7 @@ export function decorate_subText_fadeInGradient_uniqueSubText(
         let gradientLevel = 0;
         if (indexThree < pointerArray.length) {
           gradientLevel =
-            selectedGradientColorDecorationTypes.length -
-            pointerArray[indexThree] -
-            1;
+            selectedColorDecorationTypes.length - pointerArray[indexThree] - 1;
         }
         const range = new vscode.Range(
           token.line,
@@ -288,16 +300,34 @@ export function decorate_subText_fadeInGradient_uniqueSubText(
           token.line,
           subTextStartCounter + indexThree + 1,
         );
-        decorationRange3dArray[scaledHashValue][gradientLevel].push(range);
+
+        // TODO (WJ): move into function
+        const range3dArray = semanticToRange3dArray.get(key);
+        if (range3dArray === undefined) {
+          const newRange3dArray = initializeEmptyRange3dArray(rows, cols);
+          newRange3dArray[scaledHashValue][gradientLevel].push(range);
+          semanticToRange3dArray.set(key, newRange3dArray);
+        } else {
+          range3dArray[scaledHashValue][gradientLevel].push(range);
+        }
       }
       subTextStartCounter = subTextStartCounter + subTextLength;
     }
   }
 
-  const gradientColorDecorationTypes =
-    gradientColorDecorationType2dArray.flat();
-  const decorationRange2dArray = decorationRange3dArray.flat();
-  return [gradientColorDecorationTypes, decorationRange2dArray];
+  // TODO (WJ): move into function
+  const returnDecorationTypes: vscode.TextEditorDecorationType[] = [];
+  const returnRange2dArray: vscode.Range[][] = [];
+  for (const [key, decorationType2dArray] of semanticToDecorationType2dArray) {
+    returnDecorationTypes.push(...decorationType2dArray.flat());
+    const range3dArray = semanticToRange3dArray.get(key);
+    if (range3dArray !== undefined) {
+      returnRange2dArray.push(...range3dArray.flat());
+    } else {
+      returnRange2dArray.push(...Array.from({ length: cols * rows }, () => [])); // TODO (WJ): initialize once and reuse
+    }
+  }
+  return [returnDecorationTypes, returnRange2dArray];
 }
 
 /**

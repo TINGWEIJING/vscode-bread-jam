@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import {
+  DEFAULT_SEMANTIC_KEY,
   EMOJIS,
   EXTENSION_NAME,
   RENDER_PATTERN_LABEL,
@@ -115,21 +116,28 @@ class DecorationManager implements IDecorationManager {
     DecorationManager.getInstance().debouncedDecorateVariables(editor);
   }
 
-  public getGradientColorDecorationType2dArray(
+  public getKeyAndFadeInGradientColorDecorationType2dArray(
     tokenType: string,
     modifiers: string[],
-  ) {
-    const key = buildSemanticKey(tokenType, modifiers);
+  ): [string, vscode.TextEditorDecorationType[][]] {
+    let key = buildSemanticKey(tokenType, modifiers);
     let decorationType2dArray =
       this.semanticToFadeInGradientColorDecorationType2dArray.get(key);
     if (decorationType2dArray === undefined) {
-      this.semanticToFadeInGradientColorDecorationType2dArray.get(tokenType);
+      key = tokenType;
+      decorationType2dArray =
+        this.semanticToFadeInGradientColorDecorationType2dArray.get(key);
     }
     if (decorationType2dArray === undefined) {
-      decorationType2dArray = this.gradientColorDecorationType2dArray;
+      key = DEFAULT_SEMANTIC_KEY;
+      decorationType2dArray =
+        this.semanticToFadeInGradientColorDecorationType2dArray.get(key); // TODO (WJ): optimize with direct access private attribute
+    }
+    if (decorationType2dArray === undefined) {
+      throw new Error("Decoration type not found");
     }
 
-    return decorationType2dArray;
+    return [key, decorationType2dArray];
   }
 
   private previewRenderPattern(renderPatternLabel: string) {
@@ -309,6 +317,41 @@ class DecorationManager implements IDecorationManager {
         gradientColorDecorationType2dArray,
       );
     }
+    // default gradient color
+    // each gradient color
+    const defaultFadeInGradientColorDecorationType2dArray = Array.from<
+      vscode.TextEditorDecorationType,
+      vscode.TextEditorDecorationType[]
+    >({ length: gradientColors.length }, () => []);
+    for (let colorIndex = 0; colorIndex < gradientColors.length; colorIndex++) {
+      // each alpha value
+      for (
+        let stepIndex = 0;
+        stepIndex < fadeInGradientSteps.length;
+        stepIndex++
+      ) {
+        const alpha = fadeInGradientSteps[stepIndex];
+        const mixedColor = colorAlphaMixing(
+          gradientColors[colorIndex],
+          "#569CD6", // TODO (WJ): make it configurable
+          alpha,
+        );
+        if (mixedColor === null) {
+          throw new Error("Mixed color is null");
+        }
+        const colorDecorationOption: vscode.ThemableDecorationRenderOptions = {
+          color: mixedColor,
+        };
+        defaultFadeInGradientColorDecorationType2dArray[colorIndex].push(
+          vscode.window.createTextEditorDecorationType(colorDecorationOption),
+        );
+      }
+    }
+    this.semanticToFadeInGradientColorDecorationType2dArray.set(
+      DEFAULT_SEMANTIC_KEY,
+      defaultFadeInGradientColorDecorationType2dArray,
+    );
+
     this.flatFadeInGradientColorDecorationTypes = flattenComplexArray(
       this.semanticToFadeInGradientColorDecorationType2dArray,
     );
