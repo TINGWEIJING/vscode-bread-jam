@@ -32,4 +32,5 @@ export interface ExtensionConfig {
   fadeInGradientSteps: number[];
   targetedSemanticTokenTypes: string[];
   semanticForegroundColors: { [key: string]: string };
+  defaultSemanticForegroundColor: string;
 }

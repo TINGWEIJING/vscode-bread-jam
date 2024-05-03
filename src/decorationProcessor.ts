@@ -3,10 +3,11 @@ import { REGEX_LITERAL, RENDER_PATTERN_LABEL } from "./constant";
 import DecorationManager from "./decorationManager"; // TODO (WJ): solve circular dependency
 import { DecorationProcessor, SemanticCodeToken } from "./type";
 import {
+  buildSetDecorationsFunctionParams,
   getPointerArray,
-  initializeEmptyRange3dArray,
   pearsonHash,
   scaleHash,
+  setRange3dArray,
   splitString,
 } from "./util";
 
@@ -239,7 +240,7 @@ export function decorate_subText_fadeOutGradient_commonly(
 export function decorate_subText_fadeInGradient_uniqueSubText(
   codeTokens: SemanticCodeToken[],
 ): [vscode.TextEditorDecorationType[], vscode.Range[][]] {
-  const decorationManager = DecorationManager.getInstance();
+  const decorationManager = DecorationManager.getInstance(); // TODO (WJ): get from parameter
   const ignoreFirstSubToken =
     decorationManager.extensionConfig.ignoreFirstSubToken;
 
@@ -301,33 +302,26 @@ export function decorate_subText_fadeInGradient_uniqueSubText(
           subTextStartCounter + indexThree + 1,
         );
 
-        // TODO (WJ): move into function
-        const range3dArray = semanticToRange3dArray.get(key);
-        if (range3dArray === undefined) {
-          const newRange3dArray = initializeEmptyRange3dArray(rows, cols);
-          newRange3dArray[scaledHashValue][gradientLevel].push(range);
-          semanticToRange3dArray.set(key, newRange3dArray);
-        } else {
-          range3dArray[scaledHashValue][gradientLevel].push(range);
-        }
+        setRange3dArray(
+          semanticToRange3dArray,
+          key,
+          scaledHashValue,
+          gradientLevel,
+          range,
+          rows,
+          cols,
+        );
       }
       subTextStartCounter = subTextStartCounter + subTextLength;
     }
   }
 
-  // TODO (WJ): move into function
-  const returnDecorationTypes: vscode.TextEditorDecorationType[] = [];
-  const returnRange2dArray: vscode.Range[][] = [];
-  for (const [key, decorationType2dArray] of semanticToDecorationType2dArray) {
-    returnDecorationTypes.push(...decorationType2dArray.flat());
-    const range3dArray = semanticToRange3dArray.get(key);
-    if (range3dArray !== undefined) {
-      returnRange2dArray.push(...range3dArray.flat());
-    } else {
-      returnRange2dArray.push(...Array.from({ length: cols * rows }, () => [])); // TODO (WJ): initialize once and reuse
-    }
-  }
-  return [returnDecorationTypes, returnRange2dArray];
+  return buildSetDecorationsFunctionParams(
+    semanticToDecorationType2dArray,
+    semanticToRange3dArray,
+    rows,
+    cols,
+  );
 }
 
 /**

@@ -81,7 +81,9 @@ class DecorationManager implements IDecorationManager {
     string,
     vscode.TextEditorDecorationType[][]
   >();
-  public flatFadeInGradientColorDecorationTypes: vscode.TextEditorDecorationType[] =
+  private defaultFadeInGradientColorDecorationType2dArray: vscode.TextEditorDecorationType[][] =
+    []; // TODO (WJ): implement clear and dispose
+  public flatFadeInGradientColorDecorationTypes: vscode.TextEditorDecorationType[] = // TODO (WJ): remove
     [];
   public semanticTokenTypesToGradientCommonColorDecorationTypes: {
     [key: string]: vscode.TextEditorDecorationType[];
@@ -130,8 +132,9 @@ class DecorationManager implements IDecorationManager {
     }
     if (decorationType2dArray === undefined) {
       key = DEFAULT_SEMANTIC_KEY;
+      // Directly assign the default one despite can be accessed by DEFAULT_SEMANTIC_KEY key (premature optimization)
       decorationType2dArray =
-        this.semanticToFadeInGradientColorDecorationType2dArray.get(key); // TODO (WJ): optimize with direct access private attribute
+        this.defaultFadeInGradientColorDecorationType2dArray;
     }
     if (decorationType2dArray === undefined) {
       throw new Error("Decoration type not found");
@@ -267,8 +270,14 @@ class DecorationManager implements IDecorationManager {
     // TODO (WJ): Initialize semantic to gradient color decoration types
     const semanticForegroundColors =
       this.extensionConfig.semanticForegroundColors || {};
+    const defaultSemanticForegroundColor =
+      this.extensionConfig.defaultSemanticForegroundColor;
+    if (defaultSemanticForegroundColor === undefined) {
+      throw new Error("Default semantic foreground color is not provided");
+    }
 
     const fadeInGradientSteps = this.extensionConfig.fadeInGradientSteps || [];
+    // each semantic token type & modifiers to foreground color
     for (const semanticCode in semanticForegroundColors) {
       const foregroundColor = semanticForegroundColors[semanticCode];
       const [tokenType, modifiers] = parseSemanticCode(semanticCode);
@@ -317,9 +326,9 @@ class DecorationManager implements IDecorationManager {
         gradientColorDecorationType2dArray,
       );
     }
-    // default gradient color
+    // default semantic gradient color
     // each gradient color
-    const defaultFadeInGradientColorDecorationType2dArray = Array.from<
+    this.defaultFadeInGradientColorDecorationType2dArray = Array.from<
       vscode.TextEditorDecorationType,
       vscode.TextEditorDecorationType[]
     >({ length: gradientColors.length }, () => []);
@@ -333,7 +342,7 @@ class DecorationManager implements IDecorationManager {
         const alpha = fadeInGradientSteps[stepIndex];
         const mixedColor = colorAlphaMixing(
           gradientColors[colorIndex],
-          "#569CD6", // TODO (WJ): make it configurable
+          defaultSemanticForegroundColor,
           alpha,
         );
         if (mixedColor === null) {
@@ -342,17 +351,18 @@ class DecorationManager implements IDecorationManager {
         const colorDecorationOption: vscode.ThemableDecorationRenderOptions = {
           color: mixedColor,
         };
-        defaultFadeInGradientColorDecorationType2dArray[colorIndex].push(
+        this.defaultFadeInGradientColorDecorationType2dArray[colorIndex].push(
           vscode.window.createTextEditorDecorationType(colorDecorationOption),
         );
       }
     }
     this.semanticToFadeInGradientColorDecorationType2dArray.set(
       DEFAULT_SEMANTIC_KEY,
-      defaultFadeInGradientColorDecorationType2dArray,
+      this.defaultFadeInGradientColorDecorationType2dArray,
     );
 
     this.flatFadeInGradientColorDecorationTypes = flattenComplexArray(
+      // TODO (WJ): remove
       this.semanticToFadeInGradientColorDecorationType2dArray,
     );
 

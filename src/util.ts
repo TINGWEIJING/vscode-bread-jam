@@ -95,6 +95,52 @@ export function initializeEmptyRange3dArray(
   );
 }
 
+export function setRange3dArray(
+  semanticToRange3dArray: Map<string, vscode.Range[][][]>,
+  key: string,
+  scaledHashValue: number,
+  gradientLevel: number,
+  range: vscode.Range,
+  rows: number,
+  cols: number,
+) {
+  const range3dArray = semanticToRange3dArray.get(key);
+  if (range3dArray === undefined) {
+    const newRange3dArray = initializeEmptyRange3dArray(rows, cols);
+    newRange3dArray[scaledHashValue][gradientLevel].push(range);
+    semanticToRange3dArray.set(key, newRange3dArray);
+  } else {
+    range3dArray[scaledHashValue][gradientLevel].push(range);
+  }
+}
+
+export function buildSetDecorationsFunctionParams(
+  semanticToDecorationType2dArray: Map<
+    string,
+    vscode.TextEditorDecorationType[][]
+  >,
+  semanticToRange3dArray: Map<string, vscode.Range[][][]>,
+  rows: number,
+  cols: number,
+): [vscode.TextEditorDecorationType[], vscode.Range[][]] {
+  const returnDecorationTypes: vscode.TextEditorDecorationType[] = [];
+  const returnRange2dArray: vscode.Range[][] = [];
+  const emptyRange2dArray: vscode.Range[][] = Array.from(
+    { length: rows * cols },
+    () => [],
+  );
+  for (const [key, decorationType2dArray] of semanticToDecorationType2dArray) {
+    returnDecorationTypes.push(...decorationType2dArray.flat());
+    const range3dArray = semanticToRange3dArray.get(key);
+    if (range3dArray !== undefined) {
+      returnRange2dArray.push(...range3dArray.flat());
+    } else {
+      returnRange2dArray.push(...emptyRange2dArray);
+    }
+  }
+  return [returnDecorationTypes, returnRange2dArray];
+}
+
 /**
  * https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
  */

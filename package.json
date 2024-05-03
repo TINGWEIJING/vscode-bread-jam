@@ -289,6 +289,13 @@
           "additionalProperties": false,
           "description": "Semantic token foreground colors for fade in/out gradient."
         },
+        "color-variable-alpha.defaultSemanticForegroundColor": {
+          "order": 7,
+          "type": "string",
+          "default": "#569CD6",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "description": "Default color for semantic foreground color."
+        },
         "color-variable-alpha.semanticModifierForegroundColors": {
           "order": 6,
           "type": "object",
