@@ -256,6 +256,7 @@ export function colorAlphaMixing(
  * @returns
  */
 export function buildPreviewDebouncedDecorateVariablesFunction(
+  decorationManager: IDecorationManager,
   extensionConfig: Partial<ExtensionConfig>,
 ) {
   const delay = extensionConfig.renderDelay ?? 500;
@@ -296,7 +297,7 @@ export function buildPreviewDebouncedDecorateVariablesFunction(
       );
 
       const [resultDecorationTypes, resultDecorationRange2dArray] =
-        decorationProcessor(variableTokens);
+        decorationProcessor(variableTokens, decorationManager);
       for (let i = 0; i < resultDecorationTypes.length; i++) {
         editor.setDecorations(
           resultDecorationTypes[i],

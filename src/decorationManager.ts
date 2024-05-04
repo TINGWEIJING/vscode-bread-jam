@@ -89,6 +89,10 @@ class DecorationManager implements IDecorationManager {
     [key: string]: vscode.TextEditorDecorationType[];
   } = {};
 
+  public gradientColorSize: number = 0;
+  public fadeOutGradientStepSize: number = 0;
+  public fadeInGradientStepSize: number = 0;
+
   private constructor() {}
 
   public static getInstance(): DecorationManager {
@@ -268,6 +272,12 @@ class DecorationManager implements IDecorationManager {
     }
 
     // TODO (WJ): Initialize semantic to gradient color decoration types
+    this.gradientColorSize = this.extensionConfig.gradientColors?.length ?? 0;
+    this.fadeOutGradientStepSize =
+      this.extensionConfig.fadeOutGradientSteps?.length ?? 0;
+    this.fadeInGradientStepSize =
+      this.extensionConfig.fadeInGradientSteps?.length ?? 0;
+
     const semanticForegroundColors =
       this.extensionConfig.semanticForegroundColors || {};
     const defaultSemanticForegroundColor =
@@ -382,7 +392,10 @@ class DecorationManager implements IDecorationManager {
 
     // Initialize preview debounce decoration variables function
     this.debouncedPreviewDecorateVariables =
-      buildPreviewDebouncedDecorateVariablesFunction(this.extensionConfig);
+      buildPreviewDebouncedDecorateVariablesFunction(
+        this,
+        this.extensionConfig,
+      );
 
     console.log("Decoration Manager initialized!"); // TODO (WJ): move to output channel
     console.log(this.extensionConfig); // TODO (WJ): move to output channel
