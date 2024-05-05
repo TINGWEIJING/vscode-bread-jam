@@ -7,34 +7,53 @@ export type DecorationProcessor = (
 
 export interface IDecorationManager {
   extensionConfig: Partial<ExtensionConfig>;
-  solidColorDecorationTypes: TextEditorDecorationType[];
-  solidCommonColorDecorationType: TextEditorDecorationType;
-  gradientCommonColorDecorationTypes: TextEditorDecorationType[];
-  gradientColorDecorationType2dArray: TextEditorDecorationType[][];
-  emojiDecorationTypes: TextEditorDecorationType[];
+  // * Fade Out
+  semanticToFadeOutGradientColorDecorationType2dArray: Map<
+    string,
+    TextEditorDecorationType[][]
+  >;
+  semanticToFadeOutGradientCommonColorDecorationTypes: Map<
+    string,
+    TextEditorDecorationType[]
+  >;
+
+  // * Fade In
   semanticToFadeInGradientColorDecorationType2dArray: Map<
     string,
     TextEditorDecorationType[][]
   >;
-  flatFadeInGradientColorDecorationTypes: TextEditorDecorationType[];
-  semanticTokenTypesToGradientCommonColorDecorationTypes: Record<
+  semanticToFadeInGradientCommonColorDecorationTypes: Map<
     string,
     TextEditorDecorationType[]
   >;
+
+  // * First Character & Subtext - Solid Color
+  solidColorDecorationTypes: TextEditorDecorationType[];
+  solidCommonColorDecorationType: TextEditorDecorationType;
+
+  // * Emoji
+  emojiDecorationTypes: TextEditorDecorationType[];
 
   gradientColorSize: number;
   fadeOutGradientStepSize: number;
   fadeInGradientStepSize: number;
 
+  getKeyAndFadeOutGradientColorDecorationType2dArray(
+    tokenType: string,
+    modifiers: string[],
+  ): [string, TextEditorDecorationType[][]];
   getKeyAndFadeInGradientColorDecorationType2dArray(
     tokenType: string,
     modifiers: string[],
   ): [string, TextEditorDecorationType[][]];
-  debouncedDecorateVariables(editor: TextEditor | undefined): void;
-  debouncedPreviewDecorateVariables(
-    editor: TextEditor | undefined,
-    decorationProcessor: DecorationProcessor,
-  ): void;
+  getKeyAndFadeOutGradientCommonColorDecorationTypes(
+    tokenType: string,
+    modifiers: string[],
+  ): [string, TextEditorDecorationType[]];
+  getKeyAndFadeInGradientCommonColorDecorationTypes(
+    tokenType: string,
+    modifiers: string[],
+  ): [string, TextEditorDecorationType[]];
 }
 
 export interface SemanticCodeToken {

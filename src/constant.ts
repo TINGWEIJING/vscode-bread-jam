@@ -18,6 +18,7 @@ export const DEFAULT_SEMANTIC_KEY = "default";
 
 // export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from({ length: 256 }, (_, i) => i);
 export const PERMUTATION_TABLE: Uint8Array = Uint8Array.from([
+  // TODO (WJ): move into extension config
   234, 9, 103, 60, 5, 79, 232, 229, 45, 51, 131, 3, 168, 29, 170, 216, 99, 161,
   111, 204, 220, 209, 78, 89, 72, 191, 157, 119, 226, 184, 244, 134, 21, 61,
   175, 15, 223, 100, 230, 28, 128, 185, 84, 208, 164, 44, 113, 105, 27, 85, 203,
@@ -117,11 +118,6 @@ export const QUICK_PICK_ITEMS: QuickPickItem[] = [
   },
 ];
 
-export const ALPHA_MIXING_VALUES: number[] = [
-  0.1, 0.23, 0.41, 0.56, 0.67, 0.76, 0.83, 0.88, 0.92, 0.95, 0.97, 0.98, 0.99,
-  0.99, 1, 1, 1, 1, 1, 1,
-];
-
 export const REGEX_LITERAL = {
   /**
    * Matches semantic code with optional modifiers.
@@ -159,6 +155,7 @@ export const REGEX_LITERAL = {
 };
 
 export const EMOJIS: string[] = [
+  // TODO (WJ): move into extension config
   "😀",
   "😃",
   "😄",

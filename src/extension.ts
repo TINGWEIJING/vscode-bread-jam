@@ -1,13 +1,11 @@
 import * as vscode from "vscode"; // TODO (WJ): avoid import all
 import {
   EXTENSION_COMMANDS,
-  EXTENSION_ID,
   EXTENSION_NAME,
   QUICK_PICK_ITEMS,
   WORKSPACE_STATE_KEYS,
 } from "./constant";
 import DecorationManager from "./decorationManager";
-import { SemanticCodeToken } from "./type";
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log(

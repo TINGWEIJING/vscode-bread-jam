@@ -1,5 +1,9 @@
 import * as vscode from "vscode";
-import { PERMUTATION_TABLE, REGEX_LITERAL } from "./constant";
+import {
+  DEFAULT_SEMANTIC_KEY,
+  PERMUTATION_TABLE,
+  REGEX_LITERAL,
+} from "./constant";
 import type {
   DecorationProcessor,
   ExtensionConfig,
@@ -114,7 +118,27 @@ export function setRange3dArray(
   }
 }
 
-export function buildSetDecorationsFunctionParams(
+export function setRange2dArray(
+  semanticToRange2dArray: Map<string, vscode.Range[][]>,
+  key: string,
+  gradientLevel: number,
+  range: vscode.Range,
+  cols: number,
+) {
+  const range2dArray = semanticToRange2dArray.get(key);
+  if (range2dArray === undefined) {
+    const newRange2dArray = Array.from<vscode.Range, vscode.Range[]>(
+      { length: cols },
+      () => [],
+    );
+    newRange2dArray[gradientLevel].push(range);
+    semanticToRange2dArray.set(key, newRange2dArray);
+  } else {
+    range2dArray[gradientLevel].push(range);
+  }
+}
+
+export function buildSetDecorationsFunctionParamsFrom3DArray(
   semanticToDecorationType2dArray: Map<
     string,
     vscode.TextEditorDecorationType[][]
@@ -134,6 +158,29 @@ export function buildSetDecorationsFunctionParams(
     const range3dArray = semanticToRange3dArray.get(key);
     if (range3dArray !== undefined) {
       returnRange2dArray.push(...range3dArray.flat());
+    } else {
+      returnRange2dArray.push(...emptyRange2dArray);
+    }
+  }
+  return [returnDecorationTypes, returnRange2dArray];
+}
+
+export function buildSetDecorationsFunctionParamsFrom2DArray(
+  semanticToDecorationTypes: Map<string, vscode.TextEditorDecorationType[]>,
+  semanticToRange2dArray: Map<string, vscode.Range[][]>,
+  cols: number,
+): [vscode.TextEditorDecorationType[], vscode.Range[][]] {
+  const returnDecorationTypes: vscode.TextEditorDecorationType[] = [];
+  const returnRange2dArray: vscode.Range[][] = [];
+  const emptyRange2dArray: vscode.Range[][] = Array.from(
+    { length: cols },
+    () => [],
+  );
+  for (const [key, decorationTypes] of semanticToDecorationTypes) {
+    returnDecorationTypes.push(...decorationTypes.flat());
+    const range2dArray = semanticToRange2dArray.get(key);
+    if (range2dArray !== undefined) {
+      returnRange2dArray.push(...range2dArray);
     } else {
       returnRange2dArray.push(...emptyRange2dArray);
     }
@@ -363,6 +410,34 @@ export function buildDebouncedDecorateVariablesFunction(
     }
     console.timeEnd("decorate");
   }, delay);
+}
+
+export function getDecorationTypeByKey<T>(
+  tokenType: string,
+  modifiers: string[],
+  decorationMap: Map<string, T>,
+  defaultDecoration: T,
+): [string, T] {
+  let key = buildSemanticKey(tokenType, modifiers);
+  let decorationType = decorationMap.get(key);
+
+  if (!decorationType) {
+    key = tokenType;
+    decorationType = decorationMap.get(key);
+  }
+
+  if (!decorationType) {
+    // Directly assign the default one despite can be accessed by DEFAULT_SEMANTIC_KEY key
+    // (premature optimization)
+    key = DEFAULT_SEMANTIC_KEY;
+    decorationType = defaultDecoration;
+  }
+
+  if (!decorationType) {
+    throw new Error("Decoration type not found");
+  }
+
+  return [key, decorationType];
 }
 
 function decodeSemanticTokensData(
