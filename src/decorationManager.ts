@@ -1,4 +1,10 @@
-import * as vscode from "vscode";
+import type {
+  ExtensionContext,
+  TextEditor,
+  TextEditorDecorationType,
+  ThemableDecorationRenderOptions,
+} from "vscode";
+import { window, workspace } from "vscode";
 import {
   DEFAULT_SEMANTIC_KEY,
   EMOJIS,
@@ -25,15 +31,14 @@ class DecorationManager implements IDecorationManager {
   private static instance: DecorationManager;
   public extensionConfig: Partial<ExtensionConfig> = {};
   public currentRenderPattern: string = RENDER_PATTERN_LABEL[0];
-  public debouncedDecorateVariables: (
-    editor: vscode.TextEditor | undefined,
-  ) => void = () => {};
+  public debouncedDecorateVariables: (editor: TextEditor | undefined) => void =
+    () => {};
   public debouncedPreviewDecorateVariables: (
-    editor: vscode.TextEditor | undefined,
+    editor: TextEditor | undefined,
     decorationProcessor: DecorationProcessor,
   ) => void = () => {};
 
-  // public static readonly EXPERIMENT_DECORATION_OPTION: vscode.ThemableDecorationRenderOptions = // TODO (WJ): remove
+  // public static readonly EXPERIMENT_DECORATION_OPTION: ThemableDecorationRenderOptions = // TODO (WJ): remove
   //   {
   //     backgroundColor: "rgba(255, 255, 0, 0.3)", // Yellow with transparency
   //     outline: "2px solid red",
@@ -41,7 +46,7 @@ class DecorationManager implements IDecorationManager {
   //     outlineStyle: "solid",
   //     outlineWidth: "2px",
   //     border: "1px dashed blue",
-  //     borderColor: new vscode.ThemeColor("editor.foreground"), // Using ThemeColor reference
+  //     borderColor: new ThemeColor("editor.foreground"), // Using ThemeColor reference
   //     borderRadius: "4px",
   //     borderSpacing: "2px",
   //     borderStyle: "dashed",
@@ -53,7 +58,7 @@ class DecorationManager implements IDecorationManager {
   //     color: "#FF4500", // Orange text color
   //     opacity: "0.8",
   //     letterSpacing: "0.5em",
-  //     // gutterIconPath: vscode.Uri.file("/path/to/icon.png"), // Absolute path to a gutter icon
+  //     // gutterIconPath: Uri.file("/path/to/icon.png"), // Absolute path to a gutter icon
   //     // gutterIconSize: "contain",
   //     overviewRulerColor: "rgba(124, 58, 237, 0.8)", // A semi-transparent purple
   //     before: {
@@ -74,38 +79,38 @@ class DecorationManager implements IDecorationManager {
   // * Fade Out
   public semanticToFadeOutGradientColorDecorationType2dArray = new Map<
     string,
-    vscode.TextEditorDecorationType[][]
+    TextEditorDecorationType[][]
   >();
-  private defaultFadeOutGradientColorDecorationType2dArray: vscode.TextEditorDecorationType[][] =
+  private defaultFadeOutGradientColorDecorationType2dArray: TextEditorDecorationType[][] =
     [];
   public semanticToFadeOutGradientCommonColorDecorationTypes = new Map<
     string,
-    vscode.TextEditorDecorationType[]
+    TextEditorDecorationType[]
   >();
-  private defaultFadeOutGradientCommonColorDecorationTypes: vscode.TextEditorDecorationType[] =
+  private defaultFadeOutGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
     [];
 
   // * Fade In
   public semanticToFadeInGradientColorDecorationType2dArray = new Map<
     string,
-    vscode.TextEditorDecorationType[][]
+    TextEditorDecorationType[][]
   >();
-  private defaultFadeInGradientColorDecorationType2dArray: vscode.TextEditorDecorationType[][] =
+  private defaultFadeInGradientColorDecorationType2dArray: TextEditorDecorationType[][] =
     [];
   public semanticToFadeInGradientCommonColorDecorationTypes = new Map<
     string,
-    vscode.TextEditorDecorationType[]
+    TextEditorDecorationType[]
   >();
-  private defaultFadeInGradientCommonColorDecorationTypes: vscode.TextEditorDecorationType[] =
+  private defaultFadeInGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
     [];
 
   // * First Character & Subtext - Solid Color
-  public solidColorDecorationTypes: vscode.TextEditorDecorationType[] = [];
-  public solidCommonColorDecorationType: vscode.TextEditorDecorationType =
-    vscode.window.createTextEditorDecorationType({});
+  public solidColorDecorationTypes: TextEditorDecorationType[] = [];
+  public solidCommonColorDecorationType: TextEditorDecorationType =
+    window.createTextEditorDecorationType({});
 
   // * Emoji
-  public emojiDecorationTypes: vscode.TextEditorDecorationType[] = [];
+  public emojiDecorationTypes: TextEditorDecorationType[] = [];
 
   public gradientColorSize: number = 0;
   public fadeOutGradientStepSize: number = 0;
@@ -124,11 +129,11 @@ class DecorationManager implements IDecorationManager {
     DecorationManager.getInstance().previewRenderPattern(renderPatternLabel);
   }
 
-  public static initialize(context?: vscode.ExtensionContext) {
+  public static initialize(context?: ExtensionContext) {
     DecorationManager.getInstance().initialize(context);
   }
 
-  public static cleanDecorations(editor: vscode.TextEditor) {
+  public static cleanDecorations(editor: TextEditor) {
     DecorationManager.getInstance().cleanDecorations(editor);
   }
 
@@ -136,14 +141,14 @@ class DecorationManager implements IDecorationManager {
     DecorationManager.getInstance().clear();
   }
 
-  public static debouncedDecorateVariables(editor?: vscode.TextEditor) {
+  public static debouncedDecorateVariables(editor?: TextEditor) {
     DecorationManager.getInstance().debouncedDecorateVariables(editor);
   }
 
   public getKeyAndFadeOutGradientColorDecorationType2dArray(
     tokenType: string,
     modifiers: string[],
-  ): [string, vscode.TextEditorDecorationType[][]] {
+  ): [string, TextEditorDecorationType[][]] {
     return getDecorationTypeByKey(
       tokenType,
       modifiers,
@@ -155,7 +160,7 @@ class DecorationManager implements IDecorationManager {
   public getKeyAndFadeInGradientColorDecorationType2dArray(
     tokenType: string,
     modifiers: string[],
-  ): [string, vscode.TextEditorDecorationType[][]] {
+  ): [string, TextEditorDecorationType[][]] {
     return getDecorationTypeByKey(
       tokenType,
       modifiers,
@@ -167,7 +172,7 @@ class DecorationManager implements IDecorationManager {
   public getKeyAndFadeOutGradientCommonColorDecorationTypes(
     tokenType: string,
     modifiers: string[],
-  ): [string, vscode.TextEditorDecorationType[]] {
+  ): [string, TextEditorDecorationType[]] {
     return getDecorationTypeByKey(
       tokenType,
       modifiers,
@@ -179,7 +184,7 @@ class DecorationManager implements IDecorationManager {
   public getKeyAndFadeInGradientCommonColorDecorationTypes(
     tokenType: string,
     modifiers: string[],
-  ): [string, vscode.TextEditorDecorationType[]] {
+  ): [string, TextEditorDecorationType[]] {
     return getDecorationTypeByKey(
       tokenType,
       modifiers,
@@ -196,7 +201,7 @@ class DecorationManager implements IDecorationManager {
       throw new Error("Decoration processor not found");
     }
 
-    const activeEditor = vscode.window.activeTextEditor;
+    const activeEditor = window.activeTextEditor;
 
     if (activeEditor !== undefined) {
       console.log("-> Preview");
@@ -205,9 +210,9 @@ class DecorationManager implements IDecorationManager {
     }
   }
 
-  private initialize(context?: vscode.ExtensionContext) {
+  private initialize(context?: ExtensionContext) {
     // TODO (WJ): split into smaller functions
-    const extensionConfig = vscode.workspace
+    const extensionConfig = workspace
       .getConfiguration()
       .get<Partial<ExtensionConfig>>(EXTENSION_NAME); // TODO (WJ): update configuration key
     if (extensionConfig === undefined) {
@@ -248,30 +253,31 @@ class DecorationManager implements IDecorationManager {
 
     // Initialize emoji decoration types
     for (let i = 0; i < EMOJIS.length; i++) {
-      const emojiDecorationOption: vscode.ThemableDecorationRenderOptions = {
+      const emojiDecorationOption: ThemableDecorationRenderOptions = {
         before: {
           contentText: EMOJIS[i],
           margin: "0 2px 0 0",
         },
       };
       this.emojiDecorationTypes.push(
-        vscode.window.createTextEditorDecorationType(emojiDecorationOption),
+        window.createTextEditorDecorationType(emojiDecorationOption),
       );
     }
 
     // Initialize solid color decoration types
     for (let i = 0; i < solidColors.length; i++) {
-      const colorDecorationOption: vscode.ThemableDecorationRenderOptions = {
+      const colorDecorationOption: ThemableDecorationRenderOptions = {
         color: solidColors[i],
       };
       this.solidColorDecorationTypes.push(
-        vscode.window.createTextEditorDecorationType(colorDecorationOption),
+        window.createTextEditorDecorationType(colorDecorationOption),
       );
     }
 
     // Initialize solid common color decoration type
-    this.solidCommonColorDecorationType =
-      vscode.window.createTextEditorDecorationType({ color: commonColor });
+    this.solidCommonColorDecorationType = window.createTextEditorDecorationType(
+      { color: commonColor },
+    );
 
     this.gradientColorSize = this.extensionConfig.gradientColors?.length ?? 0;
     this.fadeOutGradientStepSize =
@@ -301,12 +307,12 @@ class DecorationManager implements IDecorationManager {
       const semanticKey = buildSemanticKey(tokenType, modifiers);
 
       const fadeOutGradientColorDecorationType2dArray = Array.from<
-        vscode.TextEditorDecorationType,
-        vscode.TextEditorDecorationType[]
+        TextEditorDecorationType,
+        TextEditorDecorationType[]
       >({ length: gradientColors.length }, () => []);
       const fadeInGradientColorDecorationType2dArray = Array.from<
-        vscode.TextEditorDecorationType,
-        vscode.TextEditorDecorationType[]
+        TextEditorDecorationType,
+        TextEditorDecorationType[]
       >({ length: gradientColors.length }, () => []);
       // each gradient color
       for (
@@ -329,12 +335,11 @@ class DecorationManager implements IDecorationManager {
           if (mixedColor === null) {
             throw new Error("Mixed color is null");
           }
-          const colorDecorationOption: vscode.ThemableDecorationRenderOptions =
-            {
-              color: mixedColor,
-            };
+          const colorDecorationOption: ThemableDecorationRenderOptions = {
+            color: mixedColor,
+          };
           fadeOutGradientColorDecorationType2dArray[colorIndex].push(
-            vscode.window.createTextEditorDecorationType(colorDecorationOption),
+            window.createTextEditorDecorationType(colorDecorationOption),
           );
         }
         // each fade in alpha value
@@ -352,12 +357,11 @@ class DecorationManager implements IDecorationManager {
           if (mixedColor === null) {
             throw new Error("Mixed color is null");
           }
-          const colorDecorationOption: vscode.ThemableDecorationRenderOptions =
-            {
-              color: mixedColor,
-            };
+          const colorDecorationOption: ThemableDecorationRenderOptions = {
+            color: mixedColor,
+          };
           fadeInGradientColorDecorationType2dArray[colorIndex].push(
-            vscode.window.createTextEditorDecorationType(colorDecorationOption),
+            window.createTextEditorDecorationType(colorDecorationOption),
           );
         }
       }
@@ -373,12 +377,12 @@ class DecorationManager implements IDecorationManager {
     }
     // default semantic gradient color
     this.defaultFadeOutGradientColorDecorationType2dArray = Array.from<
-      vscode.TextEditorDecorationType,
-      vscode.TextEditorDecorationType[]
+      TextEditorDecorationType,
+      TextEditorDecorationType[]
     >({ length: gradientColors.length }, () => []);
     this.defaultFadeInGradientColorDecorationType2dArray = Array.from<
-      vscode.TextEditorDecorationType,
-      vscode.TextEditorDecorationType[]
+      TextEditorDecorationType,
+      TextEditorDecorationType[]
     >({ length: gradientColors.length }, () => []);
     // each gradient color
     for (let colorIndex = 0; colorIndex < gradientColors.length; colorIndex++) {
@@ -397,11 +401,11 @@ class DecorationManager implements IDecorationManager {
         if (mixedColor === null) {
           throw new Error("Mixed color is null");
         }
-        const colorDecorationOption: vscode.ThemableDecorationRenderOptions = {
+        const colorDecorationOption: ThemableDecorationRenderOptions = {
           color: mixedColor,
         };
         this.defaultFadeOutGradientColorDecorationType2dArray[colorIndex].push(
-          vscode.window.createTextEditorDecorationType(colorDecorationOption),
+          window.createTextEditorDecorationType(colorDecorationOption),
         );
       }
       // each fade in alpha value
@@ -419,11 +423,11 @@ class DecorationManager implements IDecorationManager {
         if (mixedColor === null) {
           throw new Error("Mixed color is null");
         }
-        const colorDecorationOption: vscode.ThemableDecorationRenderOptions = {
+        const colorDecorationOption: ThemableDecorationRenderOptions = {
           color: mixedColor,
         };
         this.defaultFadeInGradientColorDecorationType2dArray[colorIndex].push(
-          vscode.window.createTextEditorDecorationType(colorDecorationOption),
+          window.createTextEditorDecorationType(colorDecorationOption),
         );
       }
     }
@@ -446,9 +450,9 @@ class DecorationManager implements IDecorationManager {
       }
       const semanticKey = buildSemanticKey(tokenType, modifiers);
 
-      const fadeOutGradientCommonColorDecorationTypes: vscode.TextEditorDecorationType[] =
+      const fadeOutGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
         [];
-      const fadeInGradientCommonColorDecorationTypes: vscode.TextEditorDecorationType[] =
+      const fadeInGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
         [];
       // each fade out alpha value
       for (
@@ -465,11 +469,11 @@ class DecorationManager implements IDecorationManager {
         if (mixedColor === null) {
           throw new Error("Mixed color is null");
         }
-        const colorDecorationOption: vscode.ThemableDecorationRenderOptions = {
+        const colorDecorationOption: ThemableDecorationRenderOptions = {
           color: mixedColor,
         };
         fadeOutGradientCommonColorDecorationTypes.push(
-          vscode.window.createTextEditorDecorationType(colorDecorationOption),
+          window.createTextEditorDecorationType(colorDecorationOption),
         );
       }
       // each fade in alpha value
@@ -487,11 +491,11 @@ class DecorationManager implements IDecorationManager {
         if (mixedColor === null) {
           throw new Error("Mixed color is null");
         }
-        const colorDecorationOption: vscode.ThemableDecorationRenderOptions = {
+        const colorDecorationOption: ThemableDecorationRenderOptions = {
           color: mixedColor,
         };
         fadeInGradientCommonColorDecorationTypes.push(
-          vscode.window.createTextEditorDecorationType(colorDecorationOption),
+          window.createTextEditorDecorationType(colorDecorationOption),
         );
       }
 
@@ -523,11 +527,11 @@ class DecorationManager implements IDecorationManager {
       if (mixedColor === null) {
         throw new Error("Mixed color is null");
       }
-      const colorDecorationOption: vscode.ThemableDecorationRenderOptions = {
+      const colorDecorationOption: ThemableDecorationRenderOptions = {
         color: mixedColor,
       };
       this.defaultFadeOutGradientCommonColorDecorationTypes.push(
-        vscode.window.createTextEditorDecorationType(colorDecorationOption),
+        window.createTextEditorDecorationType(colorDecorationOption),
       );
     }
     // each fade in alpha value
@@ -545,11 +549,11 @@ class DecorationManager implements IDecorationManager {
       if (mixedColor === null) {
         throw new Error("Mixed color is null");
       }
-      const colorDecorationOption: vscode.ThemableDecorationRenderOptions = {
+      const colorDecorationOption: ThemableDecorationRenderOptions = {
         color: mixedColor,
       };
       this.defaultFadeInGradientCommonColorDecorationTypes.push(
-        vscode.window.createTextEditorDecorationType(colorDecorationOption),
+        window.createTextEditorDecorationType(colorDecorationOption),
       );
     }
     this.semanticToFadeOutGradientCommonColorDecorationTypes.set(
@@ -584,7 +588,7 @@ class DecorationManager implements IDecorationManager {
     console.log(this.extensionConfig); // TODO (WJ): move to output channel
   }
 
-  private cleanDecorations(editor: vscode.TextEditor) {
+  private cleanDecorations(editor: TextEditor) {
     [
       // * Fade Out
       ...Array.from(
@@ -668,8 +672,9 @@ class DecorationManager implements IDecorationManager {
 
     // * First Character & Subtext - Solid Color
     this.solidColorDecorationTypes = [];
-    this.solidCommonColorDecorationType =
-      vscode.window.createTextEditorDecorationType({});
+    this.solidCommonColorDecorationType = window.createTextEditorDecorationType(
+      {},
+    );
 
     // * Emoji
     this.emojiDecorationTypes = [];

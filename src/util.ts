@@ -1,4 +1,11 @@
-import * as vscode from "vscode";
+import type {
+  SemanticTokens,
+  SemanticTokensLegend,
+  TextDocument,
+  TextEditor,
+  TextEditorDecorationType,
+} from "vscode";
+import { commands, extensions, Range, Uri, window, workspace } from "vscode";
 import {
   DEFAULT_SEMANTIC_KEY,
   PERMUTATION_TABLE,
@@ -80,10 +87,10 @@ export function buildSemanticKey(
 }
 
 export function flattenComplexArray(
-  mapArray: Map<string, vscode.TextEditorDecorationType[][]>,
-): vscode.TextEditorDecorationType[] {
+  mapArray: Map<string, TextEditorDecorationType[][]>,
+): TextEditorDecorationType[] {
   // TODO (WJ): not perfect
-  let flattenedArray: vscode.TextEditorDecorationType[] = [];
+  let flattenedArray: TextEditorDecorationType[] = [];
   for (let arrays of mapArray.values()) {
     flattenedArray.push(...arrays.flat());
   }
@@ -93,18 +100,18 @@ export function flattenComplexArray(
 export function initializeEmptyRange3dArray(
   rows: number,
   cols: number,
-): vscode.Range[][][] {
+): Range[][][] {
   return Array.from({ length: rows }, () =>
     Array.from({ length: cols }, () => []),
   );
 }
 
 export function setRange3dArray(
-  semanticToRange3dArray: Map<string, vscode.Range[][][]>,
+  semanticToRange3dArray: Map<string, Range[][][]>,
   key: string,
   scaledHashValue: number,
   gradientLevel: number,
-  range: vscode.Range,
+  range: Range,
   rows: number,
   cols: number,
 ) {
@@ -119,15 +126,15 @@ export function setRange3dArray(
 }
 
 export function setRange2dArray(
-  semanticToRange2dArray: Map<string, vscode.Range[][]>,
+  semanticToRange2dArray: Map<string, Range[][]>,
   key: string,
   gradientLevel: number,
-  range: vscode.Range,
+  range: Range,
   cols: number,
 ) {
   const range2dArray = semanticToRange2dArray.get(key);
   if (range2dArray === undefined) {
-    const newRange2dArray = Array.from<vscode.Range, vscode.Range[]>(
+    const newRange2dArray = Array.from<Range, Range[]>(
       { length: cols },
       () => [],
     );
@@ -139,17 +146,14 @@ export function setRange2dArray(
 }
 
 export function buildSetDecorationsFunctionParamsFrom3DArray(
-  semanticToDecorationType2dArray: Map<
-    string,
-    vscode.TextEditorDecorationType[][]
-  >,
-  semanticToRange3dArray: Map<string, vscode.Range[][][]>,
+  semanticToDecorationType2dArray: Map<string, TextEditorDecorationType[][]>,
+  semanticToRange3dArray: Map<string, Range[][][]>,
   rows: number,
   cols: number,
-): [vscode.TextEditorDecorationType[], vscode.Range[][]] {
-  const returnDecorationTypes: vscode.TextEditorDecorationType[] = [];
-  const returnRange2dArray: vscode.Range[][] = [];
-  const emptyRange2dArray: vscode.Range[][] = Array.from(
+): [TextEditorDecorationType[], Range[][]] {
+  const returnDecorationTypes: TextEditorDecorationType[] = [];
+  const returnRange2dArray: Range[][] = [];
+  const emptyRange2dArray: Range[][] = Array.from(
     { length: rows * cols },
     () => [],
   );
@@ -166,16 +170,13 @@ export function buildSetDecorationsFunctionParamsFrom3DArray(
 }
 
 export function buildSetDecorationsFunctionParamsFrom2DArray(
-  semanticToDecorationTypes: Map<string, vscode.TextEditorDecorationType[]>,
-  semanticToRange2dArray: Map<string, vscode.Range[][]>,
+  semanticToDecorationTypes: Map<string, TextEditorDecorationType[]>,
+  semanticToRange2dArray: Map<string, Range[][]>,
   cols: number,
-): [vscode.TextEditorDecorationType[], vscode.Range[][]] {
-  const returnDecorationTypes: vscode.TextEditorDecorationType[] = [];
-  const returnRange2dArray: vscode.Range[][] = [];
-  const emptyRange2dArray: vscode.Range[][] = Array.from(
-    { length: cols },
-    () => [],
-  );
+): [TextEditorDecorationType[], Range[][]] {
+  const returnDecorationTypes: TextEditorDecorationType[] = [];
+  const returnRange2dArray: Range[][] = [];
+  const emptyRange2dArray: Range[][] = Array.from({ length: cols }, () => []);
   for (const [key, decorationTypes] of semanticToDecorationTypes) {
     returnDecorationTypes.push(...decorationTypes.flat());
     const range2dArray = semanticToRange2dArray.get(key);
@@ -206,17 +207,17 @@ export async function readJsonFileInAssets<T = any>( // TODO (WJ): remove
   filePath: string,
 ): Promise<T | null> {
   try {
-    const extension = vscode.extensions.getExtension(
+    const extension = extensions.getExtension(
       "tingcode.com.color-variable-alpha",
     );
     if (!extension) {
       console.log("Error: Could not find extension path");
-      vscode.window.showErrorMessage("Error: Could not find extension path");
+      window.showErrorMessage("Error: Could not find extension path");
       return null;
     }
     const extensionUri = extension.extensionUri;
-    const fullUri = vscode.Uri.joinPath(extensionUri, "assets", filePath);
-    const uint8Array = await vscode.workspace.fs.readFile(fullUri);
+    const fullUri = Uri.joinPath(extensionUri, "assets", filePath);
+    const uint8Array = await workspace.fs.readFile(fullUri);
     const fileContent = new TextDecoder("utf-8").decode(uint8Array);
     return JSON.parse(fileContent) as T;
   } catch (error) {
@@ -225,7 +226,7 @@ export async function readJsonFileInAssets<T = any>( // TODO (WJ): remove
         ? "Failed to parse JSON file. Please check the file format."
         : "Failed to read JSON file.";
     console.error(errorMessage, error);
-    vscode.window.showErrorMessage(errorMessage);
+    window.showErrorMessage(errorMessage);
     return null;
   }
 }
@@ -310,7 +311,7 @@ export function buildPreviewDebouncedDecorateVariablesFunction(
 
   return debounce(
     async (
-      editor: vscode.TextEditor | undefined,
+      editor: TextEditor | undefined,
       decorationProcessor: DecorationProcessor,
     ) => {
       if (editor === undefined) {
@@ -318,11 +319,11 @@ export function buildPreviewDebouncedDecorateVariablesFunction(
       }
       const uri = editor.document.uri;
       const [legend, semanticTokens] = await Promise.all([
-        vscode.commands.executeCommand<vscode.SemanticTokensLegend | undefined>(
-          "vscode.provideDocumentSemanticTokensLegend",
+        commands.executeCommand<SemanticTokensLegend | undefined>(
+          "vscode.provideDocumentSemanticTokensLegend", // TODO (WJ): move into constant
           uri,
         ),
-        vscode.commands.executeCommand<vscode.SemanticTokens | undefined>(
+        commands.executeCommand<SemanticTokens | undefined>(
           "vscode.provideDocumentSemanticTokens",
           uri,
         ),
@@ -363,7 +364,7 @@ export function buildDebouncedDecorateVariablesFunction(
 ) {
   const delay = extensionConfig.renderDelay ?? 500;
 
-  return debounce(async (editor: vscode.TextEditor | undefined) => {
+  return debounce(async (editor: TextEditor | undefined) => {
     if (editor === undefined) {
       return;
     }
@@ -372,11 +373,11 @@ export function buildDebouncedDecorateVariablesFunction(
     const uri = editor.document.uri;
 
     const [legend, semanticTokens] = await Promise.all([
-      vscode.commands.executeCommand<vscode.SemanticTokensLegend | undefined>(
+      commands.executeCommand<SemanticTokensLegend | undefined>(
         "vscode.provideDocumentSemanticTokensLegend",
         uri,
       ),
-      vscode.commands.executeCommand<vscode.SemanticTokens | undefined>(
+      commands.executeCommand<SemanticTokens | undefined>(
         "vscode.provideDocumentSemanticTokens",
         uri,
       ),
@@ -441,9 +442,9 @@ export function getDecorationTypeByKey<T>(
 }
 
 function decodeSemanticTokensData(
-  legend: vscode.SemanticTokensLegend,
+  legend: SemanticTokensLegend,
   data: Uint32Array,
-  document: vscode.TextDocument,
+  document: TextDocument,
 ): SemanticCodeToken[] {
   const documentText = document.getText();
   const tokens: SemanticCodeToken[] = [];
@@ -468,7 +469,7 @@ function decodeSemanticTokensData(
 
     const tokenType = legend.tokenTypes[tokenTypeIndex];
     const tokenModifiers = decodeTokenModifiers(encodedTokenModifiers, legend);
-    const range = new vscode.Range(
+    const range = new Range(
       lineCounter,
       characterPositionCounter,
       lineCounter,
@@ -491,7 +492,7 @@ function decodeSemanticTokensData(
 
 function decodeTokenModifiers(
   encodedTokenModifiers: number,
-  legend: vscode.SemanticTokensLegend,
+  legend: SemanticTokensLegend,
 ) {
   const modifiers = [];
 

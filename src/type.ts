@@ -1,4 +1,4 @@
-import type { Range, TextEditor, TextEditorDecorationType } from "vscode";
+import type { Range, TextEditorDecorationType } from "vscode";
 
 export type DecorationProcessor = (
   codeTokens: SemanticCodeToken[],

@@ -1,4 +1,5 @@
-import * as vscode from "vscode"; // TODO (WJ): avoid import all
+import type { ExtensionContext } from "vscode";
+import { commands, window, workspace } from "vscode";
 import {
   EXTENSION_COMMANDS,
   EXTENSION_NAME,
@@ -7,29 +8,27 @@ import {
 } from "./constant";
 import DecorationManager from "./decorationManager";
 
-export async function activate(context: vscode.ExtensionContext) {
+export async function activate(context: ExtensionContext) {
   console.log(
     'Congratulations, your extension "color-variable-alpha" is now active!',
   );
   DecorationManager.initialize(context);
 
-  let disposable = vscode.commands.registerCommand(
+  let disposable = commands.registerCommand(
     // TODO (WJ): remove
     "color-variable-alpha.helloWorld",
     () => {
-      vscode.window.showInformationMessage(
-        "Hello World from Color Variable Alpha!",
-      );
+      window.showInformationMessage("Hello World from Color Variable Alpha!");
     },
   );
-  let promptRenderPatternSelectionCommand = vscode.commands.registerCommand(
+  let promptRenderPatternSelectionCommand = commands.registerCommand(
     EXTENSION_COMMANDS.PROMPT_RENDER_PATTERN_SELECTION,
     () => {
       const currentRenderPattern = context.workspaceState.get<
         string | undefined
       >(WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN);
 
-      const quickPick = vscode.window.createQuickPick();
+      const quickPick = window.createQuickPick();
       quickPick.items = QUICK_PICK_ITEMS.map((item) => ({
         ...item,
         picked: item.description === currentRenderPattern,
@@ -71,7 +70,7 @@ export async function activate(context: vscode.ExtensionContext) {
         console.log("🚀 ~ quickPick.onDidHide ~ e:", e);
         DecorationManager.clear();
         DecorationManager.initialize(context);
-        const activeEditor = vscode.window.activeTextEditor;
+        const activeEditor = window.activeTextEditor;
         if (activeEditor !== undefined) {
           console.log("-> Render Pattern Selection Confirmed");
           DecorationManager.debouncedDecorateVariables(activeEditor);
@@ -81,20 +80,20 @@ export async function activate(context: vscode.ExtensionContext) {
       quickPick.show();
     },
   );
-  const clearDecorationsTemporarilyCommand = vscode.commands.registerCommand(
+  const clearDecorationsTemporarilyCommand = commands.registerCommand(
     EXTENSION_COMMANDS.CLEAR_DECORATIONS_TEMPORARILY,
     async () => {
       DecorationManager.clear();
       DecorationManager.initialize();
     },
   );
-  const reloadDecorationsDiposable = vscode.commands.registerCommand(
+  const reloadDecorationsDiposable = commands.registerCommand(
     EXTENSION_COMMANDS.RELOAD_DECORATIONS,
     async () => {
       DecorationManager.clear();
       DecorationManager.initialize();
 
-      const activeEditor = vscode.window.activeTextEditor;
+      const activeEditor = window.activeTextEditor;
       if (activeEditor !== undefined) {
         console.log("-> Reload");
         DecorationManager.debouncedDecorateVariables(activeEditor);
@@ -107,8 +106,8 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(promptRenderPatternSelectionCommand);
   context.subscriptions.push(reloadDecorationsDiposable);
   context.subscriptions.push(
-    vscode.workspace.onDidChangeTextDocument((textDocumentChangeEvent) => {
-      const activeEditor = vscode.window.activeTextEditor;
+    workspace.onDidChangeTextDocument((textDocumentChangeEvent) => {
+      const activeEditor = window.activeTextEditor;
       if (
         activeEditor &&
         activeEditor.document === textDocumentChangeEvent.document
@@ -119,14 +118,14 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
   );
   context.subscriptions.push(
-    // vscode.window.onDidChangeActiveTextEditor(debouncedDecorateVariables), // TODO (WJ): use back this
-    vscode.window.onDidChangeActiveTextEditor((e) => {
+    // window.onDidChangeActiveTextEditor(debouncedDecorateVariables), // TODO (WJ): use back this
+    window.onDidChangeActiveTextEditor((e) => {
       console.log("-> Active Text Editor Changed");
       DecorationManager.debouncedDecorateVariables(e);
     }),
   );
   context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration((configurationChangeEvent) => {
+    workspace.onDidChangeConfiguration((configurationChangeEvent) => {
       const configurationChanged =
         configurationChangeEvent.affectsConfiguration(EXTENSION_NAME);
       if (!configurationChanged) {
@@ -134,7 +133,7 @@ export async function activate(context: vscode.ExtensionContext) {
       }
       DecorationManager.clear();
       DecorationManager.initialize();
-      const activeEditor = vscode.window.activeTextEditor;
+      const activeEditor = window.activeTextEditor;
       if (activeEditor === undefined) {
         return;
       }
@@ -144,7 +143,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Run decorate variables on activation
-  const activeEditor = vscode.window.activeTextEditor;
+  const activeEditor = window.activeTextEditor;
   if (activeEditor !== undefined) {
     console.log("-> First Run");
     DecorationManager.debouncedDecorateVariables(activeEditor);
