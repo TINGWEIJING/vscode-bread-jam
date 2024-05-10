@@ -5,7 +5,7 @@ import type {
   TextEditor,
   TextEditorDecorationType,
 } from "vscode";
-import { commands, extensions, Range, Uri, window, workspace } from "vscode";
+import { commands, Range } from "vscode";
 import {
   DEFAULT_SEMANTIC_KEY,
   PERMUTATION_TABLE,
@@ -44,17 +44,6 @@ export function scaleHash(hash: number, max: number) {
   return Math.round(hash * (max / 255));
 }
 
-/* Randomize array in-place using Durstenfeld shuffle algorithm
- * https://stackoverflow.com/a/12646864
- */
-function shuffleArray(array: Uint8Array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
 export function splitString(input: string) {
   let splitTokens = input.split(REGEX_LITERAL.SPLIT_TOKEN);
 
@@ -84,17 +73,6 @@ export function buildSemanticKey(
     return tokenType;
   }
   return `${tokenType}:${modifiers.sort().join(",")}`;
-}
-
-export function flattenComplexArray(
-  mapArray: Map<string, TextEditorDecorationType[][]>,
-): TextEditorDecorationType[] {
-  // TODO (WJ): not perfect
-  let flattenedArray: TextEditorDecorationType[] = [];
-  for (let arrays of mapArray.values()) {
-    flattenedArray.push(...arrays.flat());
-  }
-  return flattenedArray;
 }
 
 export function initializeEmptyRange3dArray(
@@ -201,34 +179,6 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), ms);
   };
-}
-
-export async function readJsonFileInAssets<T = any>( // TODO (WJ): remove
-  filePath: string,
-): Promise<T | null> {
-  try {
-    const extension = extensions.getExtension(
-      "tingcode.com.color-variable-alpha",
-    );
-    if (!extension) {
-      console.log("Error: Could not find extension path");
-      window.showErrorMessage("Error: Could not find extension path");
-      return null;
-    }
-    const extensionUri = extension.extensionUri;
-    const fullUri = Uri.joinPath(extensionUri, "assets", filePath);
-    const uint8Array = await workspace.fs.readFile(fullUri);
-    const fileContent = new TextDecoder("utf-8").decode(uint8Array);
-    return JSON.parse(fileContent) as T;
-  } catch (error) {
-    const errorMessage =
-      error instanceof SyntaxError
-        ? "Failed to parse JSON file. Please check the file format."
-        : "Failed to read JSON file.";
-    console.error(errorMessage, error);
-    window.showErrorMessage(errorMessage);
-    return null;
-  }
 }
 
 export function getPointerArray(length: number) {
@@ -368,7 +318,6 @@ export function buildDebouncedDecorateVariablesFunction(
     if (editor === undefined) {
       return;
     }
-
     console.time("Retrieve raw tokens"); // TODO (WJ): remove
     const uri = editor.document.uri;
 

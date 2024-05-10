@@ -38,43 +38,6 @@ class DecorationManager implements IDecorationManager {
     decorationProcessor: DecorationProcessor,
   ) => void = () => {};
 
-  // public static readonly EXPERIMENT_DECORATION_OPTION: ThemableDecorationRenderOptions = // TODO (WJ): remove
-  //   {
-  //     backgroundColor: "rgba(255, 255, 0, 0.3)", // Yellow with transparency
-  //     outline: "2px solid red",
-  //     outlineColor: "red",
-  //     outlineStyle: "solid",
-  //     outlineWidth: "2px",
-  //     border: "1px dashed blue",
-  //     borderColor: new ThemeColor("editor.foreground"), // Using ThemeColor reference
-  //     borderRadius: "4px",
-  //     borderSpacing: "2px",
-  //     borderStyle: "dashed",
-  //     borderWidth: "1px",
-  //     fontStyle: "italic",
-  //     fontWeight: "bold",
-  //     textDecoration: "underline overline dotted green",
-  //     cursor: "pointer",
-  //     color: "#FF4500", // Orange text color
-  //     opacity: "0.8",
-  //     letterSpacing: "0.5em",
-  //     // gutterIconPath: Uri.file("/path/to/icon.png"), // Absolute path to a gutter icon
-  //     // gutterIconSize: "contain",
-  //     overviewRulerColor: "rgba(124, 58, 237, 0.8)", // A semi-transparent purple
-  //     before: {
-  //       contentText: "🧶",
-  //       color: "darkgreen",
-  //       margin: "0 px 0 0", // Margin around the 'before' content
-  //       textDecoration: "none",
-  //     },
-  //     after: {
-  //       contentText: "»",
-  //       color: "darkred",
-  //       margin: "0 0 0 -5px", // Margin around the 'after' content
-  //       textDecoration: "none",
-  //     },
-  //   };
-
   // TODO (WJ): change order of fade in and fade out?
   // * Fade Out
   public semanticToFadeOutGradientColorDecorationType2dArray = new Map<

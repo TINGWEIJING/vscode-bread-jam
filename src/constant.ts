@@ -6,12 +6,14 @@ export const EXTENSION_ID: string = `tingcode.com.${EXTENSION_NAME}`;
 
 export const WORKSPACE_STATE_KEYS = {
   SELECTED_RENDER_PATTERN: "selectedRenderPattern",
+  IS_EXTENSION_ON: "isExtensionOn",
 };
 
 export const EXTENSION_COMMANDS = {
   PROMPT_RENDER_PATTERN_SELECTION: `${EXTENSION_NAME}.promptRenderPatternSelection`,
   CLEAR_DECORATIONS_TEMPORARILY: `${EXTENSION_NAME}.clearDecorationsTemporarily`,
   RELOAD_DECORATIONS: `${EXTENSION_NAME}.reloadDecorations`, // TODO (WJ): update name
+  TURN_ON_OR_OFF: `${EXTENSION_NAME}.turnOnOrOff`,
 };
 
 export const DEFAULT_SEMANTIC_KEY = "default";

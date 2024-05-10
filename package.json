@@ -18,10 +18,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "color-variable-alpha.helloWorld",
-        "title": "Color Variable: Hello World"
-      },
-      {
         "command": "color-variable-alpha.promptRenderPatternSelection",
         "title": "Color Variable: Select Render Pattern"
       },
@@ -32,6 +28,10 @@
       {
         "command": "color-variable-alpha.reloadDecorations",
         "title": "Color Variable: Reload Decorations"
+      },
+      {
+        "command": "color-variable-alpha.turnOnOrOff",
+        "title": "Color Variable: Turn On/Off"
       }
     ],
     "configuration": {
@@ -315,7 +315,13 @@
           "description": "Semantic modifier foreground colors for fade in/out gradient."
         }
       }
-    }
+    },
+    "keybindings": [
+      {
+        "command": "color-variable-alpha.turnOnOrOff",
+        "key": "alt+b alt+j"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

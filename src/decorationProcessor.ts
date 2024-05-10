@@ -584,7 +584,6 @@ export function decorate_firstCharacter_solidColor_uniqueSubText(
         (ignoreFirstSubToken && indexTwo === 0) ||
         subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
-        // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
         continue;
       }
@@ -639,7 +638,6 @@ export function decorate_firstCharacter_solidColor_uniqueText(
       const subText = subTextArr[indexTwo];
       const subTextLength = subText.length;
       if (subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)) {
-        // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
         continue;
       }
@@ -687,7 +685,6 @@ export function decorate_firstCharacter_solidColor_commonly(
         (ignoreFirstSubToken && indexTwo === 0) ||
         subText.match(REGEX_LITERAL.UNWANTED_CHARACTERS)
       ) {
-        // TODO (WJ): update to using regex & cover "-"
         subTextStartCounter = subTextStartCounter + subTextLength;
         continue;
       }
