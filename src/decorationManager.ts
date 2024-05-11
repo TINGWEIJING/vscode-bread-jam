@@ -25,6 +25,8 @@ import {
   colorAlphaMixing,
   getDecorationTypeByKey,
   parseSemanticCode,
+  pearsonHash2,
+  scaleHash,
 } from "./util";
 
 class DecorationManager implements IDecorationManager {
@@ -106,6 +108,14 @@ class DecorationManager implements IDecorationManager {
 
   public static debouncedDecorateVariables(editor?: TextEditor) {
     DecorationManager.getInstance().debouncedDecorateVariables(editor);
+  }
+
+  public getHash(text: string, max: number): number {
+    const hashValue = pearsonHash2(
+      text,
+      this.extensionConfig.permutationTable!,
+    );
+    return scaleHash(hashValue, max);
   }
 
   public getKeyAndFadeOutGradientColorDecorationType2dArray(

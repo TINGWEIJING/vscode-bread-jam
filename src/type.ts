@@ -38,6 +38,7 @@ export interface IDecorationManager {
   fadeOutGradientStepSize: number;
   fadeInGradientStepSize: number;
 
+  getHash(text: string, max: number): number;
   getKeyAndFadeOutGradientColorDecorationType2dArray(
     tokenType: string,
     modifiers: string[],
@@ -79,4 +80,5 @@ export interface ExtensionConfig {
   targetedSemanticTokenTypes: string[];
   semanticForegroundColors: { [key: string]: string };
   defaultSemanticForegroundColor: string;
+  permutationTable: number[];
 }

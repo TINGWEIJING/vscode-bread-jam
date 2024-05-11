@@ -35,6 +35,22 @@ export function pearsonHash(input: string) {
 }
 
 /**
+ * Pearson hashing algorithm.
+ * TODO (WJ): validate output
+ * @param input
+ * @returns integer in range 0 - 255
+ */
+export function pearsonHash2(input: string, permutationTable: number[]) {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    // Bitwise AND (& 255): Replaces % 256 for a slight performance boost
+    // taking advantage of the fact that 256 is a power of two.
+    hash = permutationTable[(hash ^ input.charCodeAt(i)) & 255];
+  }
+  return hash;
+}
+
+/**
  *
  * @param hash
  * @param max inclusive max
@@ -75,6 +91,38 @@ export function buildSemanticKey(
   return `${tokenType}:${modifiers.sort().join(",")}`;
 }
 
+/**
+ *
+ * Given the mapping definition, Key -> Value
+ * - "variable:*readonly" -> #3FC1FF
+ * - "variable" -> #4FC1FF
+ * - "parameter" -> #2FC1FF
+ * - "parameter:declaration,readonly,local" -> #1FC1FF
+ *
+ * Expected results:
+ * 1. "variable:declaration,readonly" -> #3FC1FF
+ * 2. "parameter:declaration" -> #2FC1FF
+ * 3. "variable:readonly" -> #3FC1FF
+ * 4. "variable" -> #4FC1FF
+ * 5. "parameter:declaration,readonly,local" -> #1FC1FF
+ */
+export function buildPossibleSemanticKeys(
+  tokenType: string,
+  modifiers: string[],
+): string[] {
+  const keys = [];
+  if (modifiers.length === 0) {
+    keys.push(tokenType);
+    return keys;
+  }
+  keys.push(`${tokenType}:${modifiers.sort().join(",")}`);
+  for (const modifier of modifiers) {
+    keys.push(`${tokenType}:*${modifier}`);
+  }
+  keys.push(tokenType);
+  return keys;
+}
+
 export function initializeEmptyRange3dArray(
   rows: number,
   cols: number,
@@ -87,7 +135,7 @@ export function initializeEmptyRange3dArray(
 export function setRange3dArray(
   semanticToRange3dArray: Map<string, Range[][][]>,
   key: string,
-  scaledHashValue: number,
+  hashValue: number,
   gradientLevel: number,
   range: Range,
   rows: number,
@@ -96,10 +144,10 @@ export function setRange3dArray(
   const range3dArray = semanticToRange3dArray.get(key);
   if (range3dArray === undefined) {
     const newRange3dArray = initializeEmptyRange3dArray(rows, cols);
-    newRange3dArray[scaledHashValue][gradientLevel].push(range);
+    newRange3dArray[hashValue][gradientLevel].push(range);
     semanticToRange3dArray.set(key, newRange3dArray);
   } else {
-    range3dArray[scaledHashValue][gradientLevel].push(range);
+    range3dArray[hashValue][gradientLevel].push(range);
   }
 }
 
@@ -368,26 +416,16 @@ export function getDecorationTypeByKey<T>(
   decorationMap: Map<string, T>,
   defaultDecoration: T,
 ): [string, T] {
-  let key = buildSemanticKey(tokenType, modifiers);
-  let decorationType = decorationMap.get(key);
-
-  if (!decorationType) {
-    key = tokenType;
-    decorationType = decorationMap.get(key);
+  const keys = buildPossibleSemanticKeys(tokenType, modifiers);
+  for (const key of keys) {
+    const decorationType = decorationMap.get(key);
+    if (decorationType !== undefined) {
+      return [key, decorationType];
+    }
   }
-
-  if (!decorationType) {
-    // Directly assign the default one despite can be accessed by DEFAULT_SEMANTIC_KEY key
-    // (premature optimization)
-    key = DEFAULT_SEMANTIC_KEY;
-    decorationType = defaultDecoration;
-  }
-
-  if (!decorationType) {
-    throw new Error("Decoration type not found");
-  }
-
-  return [key, decorationType];
+  // Directly assign the default one despite can be accessed by DEFAULT_SEMANTIC_KEY key
+  // (premature optimization)
+  return [DEFAULT_SEMANTIC_KEY, defaultDecoration];
 }
 
 function decodeSemanticTokensData(

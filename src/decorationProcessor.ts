@@ -89,13 +89,11 @@ export function decorate_subText_fadeOutGradient_uniqueSubText(
         continue;
       }
 
-      const pearsonHashValue = pearsonHash(subText); // TODO (WJ): combine into one function
-      const scaledHashValue = scaleHash(
-        pearsonHashValue,
+      const hashValue = decorationManager.getHash(
+        subText,
         gradientColorSize - 1,
       );
-      const selectedDecorationTypes =
-        selectedDecorationType2dArray[scaledHashValue];
+      const selectedDecorationTypes = selectedDecorationType2dArray[hashValue];
 
       const pointerArray = getPointerArray(subTextLength);
       // each character
@@ -114,7 +112,7 @@ export function decorate_subText_fadeOutGradient_uniqueSubText(
         setRange3dArray(
           semanticToRange3dArray,
           semanticKey,
-          scaledHashValue,
+          hashValue,
           gradientLevel,
           range,
           gradientColorSize,

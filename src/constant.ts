@@ -125,16 +125,17 @@ export const REGEX_LITERAL = {
    * Matches semantic code with optional modifiers.
    *
    * - `^`: Asserts the start of the string.
-   * - `(\w+)`: Captures the variable name. \w+ matches one or more word characters.
-   * - `(?:...)`: A non-capturing group, used to group parts of the pattern.
+   * - `(\w+)`: Captures the main token type. `\w+` matches one or more word characters.
+   * - `(?:...)`: A non-capturing group, used to optionally group the colon and the modifiers that follow.
    * - `:`: Matches the literal colon character, indicating the start of the modifiers.
-   * - `(\w+(?:,\s*\w+)*)`: Captures the modifiers. This part:
-   *     - `\w+`: Matches one or more word characters (the first modifier).
-   *     - `(?:,\s*\w+)*`: A non-capturing group that matches zero or more occurrences of additional modifiers, allowing for optional spaces after commas.
-   * - `?`: Makes the entire group of : and the following modifiers optional.
+   * - `(\*?\w+(?:,\s*\*?\w+)*)`: Captures the modifiers with support for optional leading wildcards. This part:
+   *     - `\*?`: Optionally matches a leading asterisk (`*`), allowing the modifier to act as a wildcard.
+   *     - `\w+`: Matches one or more word characters for the modifier name.
+   *     - `(?:,\s*\w+)*`: A non-capturing group that matches zero or more additional modifiers, preceded by an optional comma and whitespace.
+   * - `?`: Makes the entire group starting with `:` optional, indicating that the main identifier may appear without any modifiers.
    * - `$`: Asserts the end of the string.
    */
-  SEMANTIC_CODE: /^(\w+)(?::(\w+(?:,\s*\w+)*))?$/,
+  SEMANTIC_CODE: /^(\w+)(?::(\*?\w+(?:,\s*\w+)*))?$/,
 
   /**
    * Matches various tokens in a string.
