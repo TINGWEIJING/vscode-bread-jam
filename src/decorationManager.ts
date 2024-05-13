@@ -25,7 +25,7 @@ import {
   colorAlphaMixing,
   getDecorationTypeByKey,
   parseSemanticCode,
-  pearsonHash2,
+  pearsonHash,
   scaleHash,
 } from "./util";
 
@@ -41,20 +41,6 @@ class DecorationManager implements IDecorationManager {
   ) => void = () => {};
 
   // TODO (WJ): change order of fade in and fade out?
-  // * Fade Out
-  public semanticToFadeOutGradientColorDecorationType2dArray = new Map<
-    string,
-    TextEditorDecorationType[][]
-  >();
-  private defaultFadeOutGradientColorDecorationType2dArray: TextEditorDecorationType[][] =
-    [];
-  public semanticToFadeOutGradientCommonColorDecorationTypes = new Map<
-    string,
-    TextEditorDecorationType[]
-  >();
-  private defaultFadeOutGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
-    [];
-
   // * Fade In
   public semanticToFadeInGradientColorDecorationType2dArray = new Map<
     string,
@@ -69,6 +55,20 @@ class DecorationManager implements IDecorationManager {
   private defaultFadeInGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
     [];
 
+  // * Fade Out
+  public semanticToFadeOutGradientColorDecorationType2dArray = new Map<
+    string,
+    TextEditorDecorationType[][]
+  >();
+  private defaultFadeOutGradientColorDecorationType2dArray: TextEditorDecorationType[][] =
+    [];
+  public semanticToFadeOutGradientCommonColorDecorationTypes = new Map<
+    string,
+    TextEditorDecorationType[]
+  >();
+  private defaultFadeOutGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
+    [];
+
   // * First Character & Subtext - Solid Color
   public solidColorDecorationTypes: TextEditorDecorationType[] = [];
   public solidCommonColorDecorationType: TextEditorDecorationType =
@@ -80,6 +80,8 @@ class DecorationManager implements IDecorationManager {
   public gradientColorSize: number = 0;
   public fadeOutGradientStepSize: number = 0;
   public fadeInGradientStepSize: number = 0;
+
+  private hashingCache: Map<string, number> = new Map();
 
   private constructor() {}
 
@@ -111,10 +113,12 @@ class DecorationManager implements IDecorationManager {
   }
 
   public getHash(text: string, max: number): number {
-    const hashValue = pearsonHash2(
-      text,
-      this.extensionConfig.permutationTable!,
-    );
+    const cachedHash = this.hashingCache.get(text);
+    if (cachedHash !== undefined) {
+      return scaleHash(cachedHash, max);
+    }
+    const hashValue = pearsonHash(text, this.extensionConfig.permutationTable!);
+    this.hashingCache.set(text, hashValue);
     return scaleHash(hashValue, max);
   }
 
@@ -177,7 +181,6 @@ class DecorationManager implements IDecorationManager {
     const activeEditor = window.activeTextEditor;
 
     if (activeEditor !== undefined) {
-      console.log("-> Preview");
       this.cleanDecorations(activeEditor);
       this.debouncedPreviewDecorateVariables(activeEditor, decorationProcessor);
     }
@@ -599,16 +602,6 @@ class DecorationManager implements IDecorationManager {
    */
   private clear() {
     [
-      // * Fade Out
-      ...Array.from(
-        this.semanticToFadeOutGradientColorDecorationType2dArray.values(),
-      ).flat(2),
-      ...this.defaultFadeOutGradientColorDecorationType2dArray.flat(),
-      ...Array.from(
-        this.semanticToFadeOutGradientCommonColorDecorationTypes.values(),
-      ).flat(),
-      ...this.defaultFadeOutGradientCommonColorDecorationTypes,
-
       // * Fade In
       ...Array.from(
         this.semanticToFadeInGradientColorDecorationType2dArray.values(),
@@ -618,6 +611,16 @@ class DecorationManager implements IDecorationManager {
         this.semanticToFadeInGradientCommonColorDecorationTypes.values(),
       ).flat(),
       ...this.defaultFadeInGradientCommonColorDecorationTypes,
+
+      // * Fade Out
+      ...Array.from(
+        this.semanticToFadeOutGradientColorDecorationType2dArray.values(),
+      ).flat(2),
+      ...this.defaultFadeOutGradientColorDecorationType2dArray.flat(),
+      ...Array.from(
+        this.semanticToFadeOutGradientCommonColorDecorationTypes.values(),
+      ).flat(),
+      ...this.defaultFadeOutGradientCommonColorDecorationTypes,
 
       // * First Character & Subtext - Solid Color
       ...this.solidColorDecorationTypes,
@@ -629,19 +632,17 @@ class DecorationManager implements IDecorationManager {
       decorationType.dispose();
     });
 
-    // * Fade Out
-    this.semanticToFadeOutGradientColorDecorationType2dArray.clear();
-    this.defaultFadeOutGradientColorDecorationType2dArray = [];
-
-    this.semanticToFadeOutGradientCommonColorDecorationTypes.clear();
-    this.defaultFadeOutGradientCommonColorDecorationTypes = [];
-
     // * Fade In
-
     this.semanticToFadeInGradientColorDecorationType2dArray.clear();
     this.defaultFadeInGradientColorDecorationType2dArray = [];
     this.semanticToFadeInGradientCommonColorDecorationTypes.clear();
     this.defaultFadeInGradientCommonColorDecorationTypes = [];
+
+    // * Fade Out
+    this.semanticToFadeOutGradientColorDecorationType2dArray.clear();
+    this.defaultFadeOutGradientColorDecorationType2dArray = [];
+    this.semanticToFadeOutGradientCommonColorDecorationTypes.clear();
+    this.defaultFadeOutGradientCommonColorDecorationTypes = [];
 
     // * First Character & Subtext - Solid Color
     this.solidColorDecorationTypes = [];
@@ -657,6 +658,9 @@ class DecorationManager implements IDecorationManager {
 
     // Clear preview debounce decoration variables function
     this.debouncedPreviewDecorateVariables = () => {};
+
+    // Clear hashing cache
+    this.hashingCache.clear();
   }
 }
 

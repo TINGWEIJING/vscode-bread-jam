@@ -8,8 +8,8 @@ import type {
 import { commands, Range } from "vscode";
 import {
   DEFAULT_SEMANTIC_KEY,
-  PERMUTATION_TABLE,
   REGEX_LITERAL,
+  VSCODE_COMMANDS,
 } from "./constant";
 import type {
   DecorationProcessor,
@@ -24,23 +24,7 @@ import type {
  * @param input
  * @returns integer in range 0 - 255
  */
-export function pearsonHash(input: string) {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    // Bitwise AND (& 255): Replaces % 256 for a slight performance boost
-    // taking advantage of the fact that 256 is a power of two.
-    hash = PERMUTATION_TABLE[(hash ^ input.charCodeAt(i)) & 255];
-  }
-  return hash;
-}
-
-/**
- * Pearson hashing algorithm.
- * TODO (WJ): validate output
- * @param input
- * @returns integer in range 0 - 255
- */
-export function pearsonHash2(input: string, permutationTable: number[]) {
+export function pearsonHash(input: string, permutationTable: number[]) {
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
     // Bitwise AND (& 255): Replaces % 256 for a slight performance boost
@@ -318,11 +302,11 @@ export function buildPreviewDebouncedDecorateVariablesFunction(
       const uri = editor.document.uri;
       const [legend, semanticTokens] = await Promise.all([
         commands.executeCommand<SemanticTokensLegend | undefined>(
-          "vscode.provideDocumentSemanticTokensLegend", // TODO (WJ): move into constant
+          VSCODE_COMMANDS.PROVIDE_DOCUMENT_SEMANTIC_TOKENS_LEGEND,
           uri,
         ),
         commands.executeCommand<SemanticTokens | undefined>(
-          "vscode.provideDocumentSemanticTokens",
+          VSCODE_COMMANDS.PROVIDE_DOCUMENT_SEMANTIC_TOKENS,
           uri,
         ),
       ]);
@@ -336,10 +320,11 @@ export function buildPreviewDebouncedDecorateVariablesFunction(
         editor.document,
       );
 
-      // filter out the tokens that are not variables
-      const variableTokens = result.filter(
-        (token) =>
-          ["variable", "parameter", "property"].includes(token.tokenType), // TODO (WJ): make into configuration
+      // filter out the tokens that are not within the targeted semantic token types & modifiers
+      const targetedSemanticTokenTypes =
+        extensionConfig.targetedSemanticTokenTypes ?? [];
+      const variableTokens = result.filter((token) =>
+        targetedSemanticTokenTypes.includes(token.tokenType),
       );
 
       const [resultDecorationTypes, resultDecorationRange2dArray] =
@@ -371,11 +356,11 @@ export function buildDebouncedDecorateVariablesFunction(
 
     const [legend, semanticTokens] = await Promise.all([
       commands.executeCommand<SemanticTokensLegend | undefined>(
-        "vscode.provideDocumentSemanticTokensLegend",
+        VSCODE_COMMANDS.PROVIDE_DOCUMENT_SEMANTIC_TOKENS_LEGEND,
         uri,
       ),
       commands.executeCommand<SemanticTokens | undefined>(
-        "vscode.provideDocumentSemanticTokens",
+        VSCODE_COMMANDS.PROVIDE_DOCUMENT_SEMANTIC_TOKENS,
         uri,
       ),
     ]);
@@ -390,10 +375,11 @@ export function buildDebouncedDecorateVariablesFunction(
       editor.document,
     );
 
-    // filter out the tokens that are not variables
-    const variableTokens = result.filter(
-      (token) =>
-        ["variable", "parameter", "property"].includes(token.tokenType), // TODO (WJ): make into configuration
+    // filter out the tokens that are not within the targeted semantic token types
+    const targetedSemanticTokenTypes =
+      extensionConfig.targetedSemanticTokenTypes ?? [];
+    const variableTokens = result.filter((token) =>
+      targetedSemanticTokenTypes.includes(token.tokenType),
     );
     console.timeEnd("Preprocess tokens");
 

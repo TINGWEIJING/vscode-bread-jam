@@ -7,22 +7,22 @@ export type DecorationProcessor = (
 
 export interface IDecorationManager {
   extensionConfig: Partial<ExtensionConfig>;
-  // * Fade Out
-  semanticToFadeOutGradientColorDecorationType2dArray: Map<
-    string,
-    TextEditorDecorationType[][]
-  >;
-  semanticToFadeOutGradientCommonColorDecorationTypes: Map<
-    string,
-    TextEditorDecorationType[]
-  >;
-
   // * Fade In
   semanticToFadeInGradientColorDecorationType2dArray: Map<
     string,
     TextEditorDecorationType[][]
   >;
   semanticToFadeInGradientCommonColorDecorationTypes: Map<
+    string,
+    TextEditorDecorationType[]
+  >;
+
+  // * Fade Out
+  semanticToFadeOutGradientColorDecorationType2dArray: Map<
+    string,
+    TextEditorDecorationType[][]
+  >;
+  semanticToFadeOutGradientCommonColorDecorationTypes: Map<
     string,
     TextEditorDecorationType[]
   >;
@@ -78,6 +78,7 @@ export interface ExtensionConfig {
   fadeInGradientSteps: number[];
   fadeOutGradientSteps: number[];
   targetedSemanticTokenTypes: string[];
+  targetedSemanticModifiers: string[]; // TODO (WJ): figure how to handle empty modifier
   semanticForegroundColors: { [key: string]: string };
   defaultSemanticForegroundColor: string;
   permutationTable: number[];

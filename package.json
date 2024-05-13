@@ -22,12 +22,12 @@
         "title": "Color Variable: Select Render Pattern"
       },
       {
-        "command": "color-variable-alpha.clearDecorationsTemporarily",
-        "title": "Color Variable: Clear Decorations Temporarily"
+        "command": "color-variable-alpha.clearRenderingTemporarily",
+        "title": "Color Variable: Clear Rendering Temporarily"
       },
       {
-        "command": "color-variable-alpha.reloadDecorations",
-        "title": "Color Variable: Reload Decorations"
+        "command": "color-variable-alpha.reloadRendering",
+        "title": "Color Variable: Reload Rendering"
       },
       {
         "command": "color-variable-alpha.turnOnOrOff",
