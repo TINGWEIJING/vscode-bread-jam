@@ -16,6 +16,11 @@ export async function activate(context: ExtensionContext) {
   if (isExtensionOn === undefined) {
     context.workspaceState.update(WORKSPACE_STATE_KEYS.IS_EXTENSION_ON, true);
   }
+  // const logChannel = window.createOutputChannel(`${EXTENSION_NAME} Log`, {
+  //   log: true,
+  // });
+  // logChannel.appendLine("Log Channel");
+  // window.showErrorMessage("Error Notification");
 
   const promptRenderPatternSelectionCommandDisposable =
     commands.registerCommand(

@@ -31,6 +31,17 @@ import {
 
 class DecorationManager implements IDecorationManager {
   private static instance: DecorationManager;
+
+  public static isConstructed: boolean = false;
+  public static isInitialized: boolean = false;
+  private log: (message: string) => void = (message: string) => {
+    // TODO (WJ): move to constructor
+    throw new Error("Log function is not initialized");
+  };
+  private error: (message: string) => void = (message: string) => {
+    throw new Error("Error function is not initialized");
+  };
+
   public extensionConfig: Partial<ExtensionConfig> = {};
   public currentRenderPattern: string = RENDER_PATTERN_LABEL[0];
   public debouncedDecorateVariables: (editor: TextEditor | undefined) => void =
@@ -84,6 +95,20 @@ class DecorationManager implements IDecorationManager {
   private hashingCache: Map<string, number> = new Map();
 
   private constructor() {}
+
+  public static construct(
+    log: (message: string) => void,
+    error: (message: string) => void,
+    context: ExtensionContext,
+    extensionConfig: ExtensionConfig,
+  ) {
+    // TODO (WJ): update constructor
+    const instance = new DecorationManager();
+    instance.log = log;
+    instance.error = error;
+    this.isConstructed = true;
+    DecorationManager.instance = instance;
+  }
 
   public static getInstance(): DecorationManager {
     if (!DecorationManager.instance) {
@@ -661,6 +686,115 @@ class DecorationManager implements IDecorationManager {
 
     // Clear hashing cache
     this.hashingCache.clear();
+  }
+
+  private _initializeFadeIn() {
+    const fadeInGradientSteps = this.extensionConfig.fadeInGradientSteps;
+    if (fadeInGradientSteps === undefined || fadeInGradientSteps.length < 16) {
+      throw new Error("Fade in gradient steps are not provided"); // TODO (WJ): update message
+    }
+    const gradientColors = this.extensionConfig.gradientColors;
+    if (gradientColors === undefined || !Boolean(gradientColors)) {
+      throw new Error("Gradient colors are not provided"); // TODO (WJ): update message
+    }
+    const semanticForegroundColors =
+      this.extensionConfig.semanticForegroundColors;
+    if (
+      semanticForegroundColors === undefined ||
+      !Boolean(semanticForegroundColors)
+    ) {
+      throw new Error("Semantic foreground colors are not provided"); // TODO (WJ): update message
+    }
+    const defaultSemanticForegroundColor =
+      this.extensionConfig.defaultSemanticForegroundColor;
+    if (
+      defaultSemanticForegroundColor === undefined ||
+      !Boolean(semanticForegroundColors)
+    ) {
+      throw new Error("Default semantic foreground color is not provided"); // TODO (WJ): update message
+    }
+
+    // each semantic token type & modifiers to foreground color
+    for (const semanticCode in semanticForegroundColors) {
+      const foregroundColor = semanticForegroundColors[semanticCode];
+      const [tokenType, modifiers] = parseSemanticCode(semanticCode);
+      if (tokenType === null) {
+        continue;
+      }
+      const semanticKey = buildSemanticKey(tokenType, modifiers);
+
+      const fadeInGradientColorDecorationType2dArray = Array.from<
+        TextEditorDecorationType,
+        TextEditorDecorationType[]
+      >({ length: gradientColors.length }, () => []);
+      // each gradient color
+      for (
+        let colorIndex = 0;
+        colorIndex < gradientColors.length;
+        colorIndex++
+      ) {
+        // each fade in alpha value
+        for (
+          let stepIndex = 0;
+          stepIndex < fadeInGradientSteps.length;
+          stepIndex++
+        ) {
+          const alpha = fadeInGradientSteps[stepIndex];
+          const mixedColor = colorAlphaMixing(
+            gradientColors[colorIndex],
+            foregroundColor,
+            alpha,
+          );
+          if (mixedColor === null) {
+            throw new Error("Mixed color is null"); // TODO (WJ): update message
+          }
+          const colorDecorationOption: ThemableDecorationRenderOptions = {
+            color: mixedColor,
+          };
+          fadeInGradientColorDecorationType2dArray[colorIndex].push(
+            window.createTextEditorDecorationType(colorDecorationOption),
+          );
+        }
+      }
+      this.semanticToFadeInGradientColorDecorationType2dArray.set(
+        semanticKey,
+        fadeInGradientColorDecorationType2dArray,
+      );
+    }
+    // default semantic gradient color
+    this.defaultFadeInGradientColorDecorationType2dArray = Array.from<
+      TextEditorDecorationType,
+      TextEditorDecorationType[]
+    >({ length: gradientColors.length }, () => []);
+    // each gradient color
+    for (let colorIndex = 0; colorIndex < gradientColors.length; colorIndex++) {
+      // each fade in alpha value
+      for (
+        let stepIndex = 0;
+        stepIndex < fadeInGradientSteps.length;
+        stepIndex++
+      ) {
+        const alpha = fadeInGradientSteps[stepIndex];
+        const mixedColor = colorAlphaMixing(
+          gradientColors[colorIndex],
+          defaultSemanticForegroundColor,
+          alpha,
+        );
+        if (mixedColor === null) {
+          throw new Error("Mixed color is null");
+        }
+        const colorDecorationOption: ThemableDecorationRenderOptions = {
+          color: mixedColor,
+        };
+        this.defaultFadeInGradientColorDecorationType2dArray[colorIndex].push(
+          window.createTextEditorDecorationType(colorDecorationOption),
+        );
+      }
+    }
+    this.semanticToFadeInGradientColorDecorationType2dArray.set(
+      DEFAULT_SEMANTIC_KEY,
+      this.defaultFadeInGradientColorDecorationType2dArray,
+    );
   }
 }
 
