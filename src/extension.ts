@@ -1,4 +1,4 @@
-import type { ExtensionContext } from "vscode";
+import type { ExtensionContext, LogOutputChannel } from "vscode";
 import { commands, window, workspace } from "vscode";
 import {
   EXTENSION_COMMANDS,
@@ -8,6 +8,8 @@ import {
 } from "./constant";
 import DecorationManager from "./decorationManager";
 import type { ExtensionConfig } from "./type";
+
+let logChannel: LogOutputChannel;
 
 export async function activate(context: ExtensionContext) {
   const isExtensionOn = context.workspaceState.get<boolean>(
@@ -25,9 +27,10 @@ export async function activate(context: ExtensionContext) {
   }
   // TODO (WJ): add configuration validation
 
-  const logChannel = window.createOutputChannel(`${EXTENSION_NAME} Log`, {
+  logChannel = window.createOutputChannel(`${EXTENSION_NAME} Log`, {
     log: true,
   });
+  logChannel.clear();
   DecorationManager.construct(
     extensionConfig as unknown as ExtensionConfig,
     context,
@@ -203,6 +206,8 @@ export async function activate(context: ExtensionContext) {
 
 // This method is called when your extension is deactivated
 export function deactivate() {
+  logChannel.clear();
+  logChannel.dispose();
   DecorationManager.clear();
 }
 

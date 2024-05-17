@@ -33,12 +33,16 @@ class DecorationManager implements IDecorationManager {
   public static isConstructed: boolean = false;
   public static isInitialized: boolean = false;
 
-  /* Variables below will be initialized in constructor only */
+  /* Variables below need to be initialized in constructor only */
   public extensionConfig: ExtensionConfig;
   private context: ExtensionContext;
   private log: (message: string) => void;
   private error: (message: string) => void;
 
+  /* Variables below need to be initialized in initialize() */
+  public gradientColorSize: number = 0;
+  public fadeOutGradientStepSize: number = 0;
+  public fadeInGradientStepSize: number = 0;
   public currentRenderPattern: string = RENDER_PATTERN_LABEL[0];
   public debouncedDecorateVariables: (editor: TextEditor | undefined) => void =
     () => {};
@@ -47,7 +51,6 @@ class DecorationManager implements IDecorationManager {
     decorationProcessor: DecorationProcessor,
   ) => void = () => {};
 
-  // TODO (WJ): change order of fade in and fade out?
   // * Fade In
   public semanticToFadeInGradientColorDecorationType2dArray = new Map<
     string,
@@ -83,10 +86,6 @@ class DecorationManager implements IDecorationManager {
 
   // * Emoji
   public emojiDecorationTypes: TextEditorDecorationType[] = [];
-
-  public gradientColorSize: number = 0;
-  public fadeOutGradientStepSize: number = 0;
-  public fadeInGradientStepSize: number = 0;
 
   private hashingCache: Map<string, number> = new Map();
 
@@ -235,9 +234,8 @@ class DecorationManager implements IDecorationManager {
     this.extensionConfig = extensionConfig;
   }
 
-  // TODO (WJ): split into smaller functions
   private initialize() {
-    // Update current render pattern only when context is provided
+    // Update current render pattern
     const workspaceStateRenderPattern = this.context.workspaceState.get<string>(
       WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
     );
@@ -250,338 +248,36 @@ class DecorationManager implements IDecorationManager {
       );
     }
 
-    const solidColors = this.extensionConfig.solidColors ?? [];
-    let gradientColors = this.extensionConfig.gradientColors;
-    if (gradientColors === undefined || gradientColors.length === 0) {
-      gradientColors = solidColors;
-    }
-    let commonColor = this.extensionConfig.commonColor;
-    if (commonColor === undefined && solidColors.length > 0) {
-      commonColor = solidColors[0];
-    } else if (commonColor === undefined) {
-      throw new Error("No common color is provided!");
-      // TODO (WJ): add notification
-    }
-
-    // Initialize emoji decoration types
-    for (let i = 0; i < EMOJIS.length; i++) {
-      const emojiDecorationOption: ThemableDecorationRenderOptions = {
-        before: {
-          contentText: EMOJIS[i],
-          margin: "0 2px 0 0",
-        },
-      };
-      this.emojiDecorationTypes.push(
-        window.createTextEditorDecorationType(emojiDecorationOption),
-      );
-    }
-
-    // Initialize solid color decoration types
-    for (let i = 0; i < solidColors.length; i++) {
-      const colorDecorationOption: ThemableDecorationRenderOptions = {
-        color: solidColors[i],
-      };
-      this.solidColorDecorationTypes.push(
-        window.createTextEditorDecorationType(colorDecorationOption),
-      );
-    }
-
-    // Initialize solid common color decoration type
-    this.solidCommonColorDecorationType = window.createTextEditorDecorationType(
-      { color: commonColor },
-    );
-
-    this.gradientColorSize = this.extensionConfig.gradientColors?.length ?? 0;
+    this.gradientColorSize = this.extensionConfig.gradientColors.length;
     this.fadeOutGradientStepSize =
-      this.extensionConfig.fadeOutGradientSteps?.length ?? 0;
+      this.extensionConfig.fadeOutGradientSteps.length;
     this.fadeInGradientStepSize =
-      this.extensionConfig.fadeInGradientSteps?.length ?? 0;
+      this.extensionConfig.fadeInGradientSteps.length;
 
-    const semanticForegroundColors =
-      this.extensionConfig.semanticForegroundColors || {};
-    const defaultSemanticForegroundColor =
-      this.extensionConfig.defaultSemanticForegroundColor;
-    if (defaultSemanticForegroundColor === undefined) {
-      throw new Error("Default semantic foreground color is not provided");
-    }
+    // * Fade In & Fade Out Gradient Color
+    this._initializeFadeInGradientColor();
+    this._initializeFadeOutGradientColor();
 
-    // * Fade Out & Fade In Gradient Color
-    const fadeOutGradientSteps =
-      this.extensionConfig.fadeOutGradientSteps || [];
-    const fadeInGradientSteps = this.extensionConfig.fadeInGradientSteps || [];
-    // each semantic token type & modifiers to foreground color
-    for (const semanticCode in semanticForegroundColors) {
-      const foregroundColor = semanticForegroundColors[semanticCode];
-      const [tokenType, modifiers] = parseSemanticCode(semanticCode);
-      if (tokenType === null) {
-        continue;
-      }
-      const semanticKey = buildSemanticKey(tokenType, modifiers);
+    // * Fade In & Fade Out Gradient Common Color
+    this._initializeFadeInGradientCommonColor();
+    this._initializeFadeOutGradientCommonColor();
 
-      const fadeOutGradientColorDecorationType2dArray = Array.from<
-        TextEditorDecorationType,
-        TextEditorDecorationType[]
-      >({ length: gradientColors.length }, () => []);
-      const fadeInGradientColorDecorationType2dArray = Array.from<
-        TextEditorDecorationType,
-        TextEditorDecorationType[]
-      >({ length: gradientColors.length }, () => []);
-      // each gradient color
-      for (
-        let colorIndex = 0;
-        colorIndex < gradientColors.length;
-        colorIndex++
-      ) {
-        // each fade out alpha value
-        for (
-          let stepIndex = 0;
-          stepIndex < fadeOutGradientSteps.length;
-          stepIndex++
-        ) {
-          const alpha = fadeOutGradientSteps[stepIndex];
-          const mixedColor = colorAlphaMixing(
-            gradientColors[colorIndex],
-            foregroundColor,
-            alpha,
-          );
-          if (mixedColor === null) {
-            throw new Error("Mixed color is null");
-          }
-          const colorDecorationOption: ThemableDecorationRenderOptions = {
-            color: mixedColor,
-          };
-          fadeOutGradientColorDecorationType2dArray[colorIndex].push(
-            window.createTextEditorDecorationType(colorDecorationOption),
-          );
-        }
-        // each fade in alpha value
-        for (
-          let stepIndex = 0;
-          stepIndex < fadeInGradientSteps.length;
-          stepIndex++
-        ) {
-          const alpha = fadeInGradientSteps[stepIndex];
-          const mixedColor = colorAlphaMixing(
-            gradientColors[colorIndex],
-            foregroundColor,
-            alpha,
-          );
-          if (mixedColor === null) {
-            throw new Error("Mixed color is null");
-          }
-          const colorDecorationOption: ThemableDecorationRenderOptions = {
-            color: mixedColor,
-          };
-          fadeInGradientColorDecorationType2dArray[colorIndex].push(
-            window.createTextEditorDecorationType(colorDecorationOption),
-          );
-        }
-      }
+    // * Solid Color
+    this._initializeSolidColor();
 
-      this.semanticToFadeOutGradientColorDecorationType2dArray.set(
-        semanticKey,
-        fadeOutGradientColorDecorationType2dArray,
-      );
-      this.semanticToFadeInGradientColorDecorationType2dArray.set(
-        semanticKey,
-        fadeInGradientColorDecorationType2dArray,
-      );
-    }
-    // default semantic gradient color
-    this.defaultFadeOutGradientColorDecorationType2dArray = Array.from<
-      TextEditorDecorationType,
-      TextEditorDecorationType[]
-    >({ length: gradientColors.length }, () => []);
-    this.defaultFadeInGradientColorDecorationType2dArray = Array.from<
-      TextEditorDecorationType,
-      TextEditorDecorationType[]
-    >({ length: gradientColors.length }, () => []);
-    // each gradient color
-    for (let colorIndex = 0; colorIndex < gradientColors.length; colorIndex++) {
-      // each fade out alpha value
-      for (
-        let stepIndex = 0;
-        stepIndex < fadeOutGradientSteps.length;
-        stepIndex++
-      ) {
-        const alpha = fadeOutGradientSteps[stepIndex];
-        const mixedColor = colorAlphaMixing(
-          gradientColors[colorIndex],
-          defaultSemanticForegroundColor,
-          alpha,
-        );
-        if (mixedColor === null) {
-          throw new Error("Mixed color is null");
-        }
-        const colorDecorationOption: ThemableDecorationRenderOptions = {
-          color: mixedColor,
-        };
-        this.defaultFadeOutGradientColorDecorationType2dArray[colorIndex].push(
-          window.createTextEditorDecorationType(colorDecorationOption),
-        );
-      }
-      // each fade in alpha value
-      for (
-        let stepIndex = 0;
-        stepIndex < fadeInGradientSteps.length;
-        stepIndex++
-      ) {
-        const alpha = fadeInGradientSteps[stepIndex];
-        const mixedColor = colorAlphaMixing(
-          gradientColors[colorIndex],
-          defaultSemanticForegroundColor,
-          alpha,
-        );
-        if (mixedColor === null) {
-          throw new Error("Mixed color is null");
-        }
-        const colorDecorationOption: ThemableDecorationRenderOptions = {
-          color: mixedColor,
-        };
-        this.defaultFadeInGradientColorDecorationType2dArray[colorIndex].push(
-          window.createTextEditorDecorationType(colorDecorationOption),
-        );
-      }
-    }
-    this.semanticToFadeOutGradientColorDecorationType2dArray.set(
-      DEFAULT_SEMANTIC_KEY,
-      this.defaultFadeOutGradientColorDecorationType2dArray,
-    );
-    this.semanticToFadeInGradientColorDecorationType2dArray.set(
-      DEFAULT_SEMANTIC_KEY,
-      this.defaultFadeInGradientColorDecorationType2dArray,
-    );
+    // * Solid Common Color
+    this._initializeSolidCommonColor();
 
-    // * Fade Out & Fade In Gradient Common Color
-    // each semantic token type & modifiers to foreground color
-    for (const semanticCode in semanticForegroundColors) {
-      const foregroundColor = semanticForegroundColors[semanticCode];
-      const [tokenType, modifiers] = parseSemanticCode(semanticCode);
-      if (tokenType === null) {
-        continue;
-      }
-      const semanticKey = buildSemanticKey(tokenType, modifiers);
-
-      const fadeOutGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
-        [];
-      const fadeInGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
-        [];
-      // each fade out alpha value
-      for (
-        let stepIndex = 0;
-        stepIndex < fadeOutGradientSteps.length;
-        stepIndex++
-      ) {
-        const alpha = fadeOutGradientSteps[stepIndex];
-        const mixedColor = colorAlphaMixing(
-          commonColor,
-          foregroundColor,
-          alpha,
-        );
-        if (mixedColor === null) {
-          throw new Error("Mixed color is null");
-        }
-        const colorDecorationOption: ThemableDecorationRenderOptions = {
-          color: mixedColor,
-        };
-        fadeOutGradientCommonColorDecorationTypes.push(
-          window.createTextEditorDecorationType(colorDecorationOption),
-        );
-      }
-      // each fade in alpha value
-      for (
-        let stepIndex = 0;
-        stepIndex < fadeInGradientSteps.length;
-        stepIndex++
-      ) {
-        const alpha = fadeInGradientSteps[stepIndex];
-        const mixedColor = colorAlphaMixing(
-          commonColor,
-          foregroundColor,
-          alpha,
-        );
-        if (mixedColor === null) {
-          throw new Error("Mixed color is null");
-        }
-        const colorDecorationOption: ThemableDecorationRenderOptions = {
-          color: mixedColor,
-        };
-        fadeInGradientCommonColorDecorationTypes.push(
-          window.createTextEditorDecorationType(colorDecorationOption),
-        );
-      }
-
-      this.semanticToFadeOutGradientCommonColorDecorationTypes.set(
-        semanticKey,
-        fadeOutGradientCommonColorDecorationTypes,
-      );
-      this.semanticToFadeInGradientCommonColorDecorationTypes.set(
-        semanticKey,
-        fadeInGradientCommonColorDecorationTypes,
-      );
-    }
-
-    // default semantic gradient common color
-    this.defaultFadeOutGradientCommonColorDecorationTypes = [];
-    this.defaultFadeInGradientCommonColorDecorationTypes = [];
-    // each fade out alpha value
-    for (
-      let stepIndex = 0;
-      stepIndex < fadeOutGradientSteps.length;
-      stepIndex++
-    ) {
-      const alpha = fadeOutGradientSteps[stepIndex];
-      const mixedColor = colorAlphaMixing(
-        commonColor,
-        defaultSemanticForegroundColor,
-        alpha,
-      );
-      if (mixedColor === null) {
-        throw new Error("Mixed color is null");
-      }
-      const colorDecorationOption: ThemableDecorationRenderOptions = {
-        color: mixedColor,
-      };
-      this.defaultFadeOutGradientCommonColorDecorationTypes.push(
-        window.createTextEditorDecorationType(colorDecorationOption),
-      );
-    }
-    // each fade in alpha value
-    for (
-      let stepIndex = 0;
-      stepIndex < fadeInGradientSteps.length;
-      stepIndex++
-    ) {
-      const alpha = fadeInGradientSteps[stepIndex];
-      const mixedColor = colorAlphaMixing(
-        commonColor,
-        defaultSemanticForegroundColor,
-        alpha,
-      );
-      if (mixedColor === null) {
-        throw new Error("Mixed color is null");
-      }
-      const colorDecorationOption: ThemableDecorationRenderOptions = {
-        color: mixedColor,
-      };
-      this.defaultFadeInGradientCommonColorDecorationTypes.push(
-        window.createTextEditorDecorationType(colorDecorationOption),
-      );
-    }
-    this.semanticToFadeOutGradientCommonColorDecorationTypes.set(
-      DEFAULT_SEMANTIC_KEY,
-      this.defaultFadeOutGradientCommonColorDecorationTypes,
-    );
-    this.semanticToFadeInGradientCommonColorDecorationTypes.set(
-      DEFAULT_SEMANTIC_KEY,
-      this.defaultFadeInGradientCommonColorDecorationTypes,
-    );
+    // * Emoji
+    this._initializeEmoji();
 
     // Initialize debounced decorate variables function
     const decorationProcessor =
       renderPatternToDecorationProcessor[this.currentRenderPattern];
     if (decorationProcessor === undefined) {
-      throw new Error("Decoration processor not found"); // TODO (WJ): add notification
+      throw new Error(
+        `decorationProcessor is undefined. this.currentRenderPattern: ${this.currentRenderPattern}`,
+      );
     }
     this.debouncedDecorateVariables = buildDebouncedDecorateVariablesFunction(
       decorationProcessor,
@@ -596,22 +292,12 @@ class DecorationManager implements IDecorationManager {
         this.extensionConfig,
       );
 
-    console.log("Decoration Manager initialized!"); // TODO (WJ): move to output channel
-    console.log(this.extensionConfig); // TODO (WJ): move to output channel
+    this.log("Decoration Manager initialized!");
+    this.log(JSON.stringify(this.extensionConfig, null, 2));
   }
 
   private cleanDecorations(editor: TextEditor) {
     [
-      // * Fade Out
-      ...Array.from(
-        this.semanticToFadeOutGradientColorDecorationType2dArray.values(),
-      ).flat(2),
-      ...this.defaultFadeOutGradientColorDecorationType2dArray.flat(),
-      ...Array.from(
-        this.semanticToFadeOutGradientCommonColorDecorationTypes.values(),
-      ).flat(),
-      ...this.defaultFadeOutGradientCommonColorDecorationTypes,
-
       // * Fade In
       ...Array.from(
         this.semanticToFadeInGradientColorDecorationType2dArray.values(),
@@ -621,6 +307,16 @@ class DecorationManager implements IDecorationManager {
         this.semanticToFadeInGradientCommonColorDecorationTypes.values(),
       ).flat(),
       ...this.defaultFadeInGradientCommonColorDecorationTypes,
+
+      // * Fade Out
+      ...Array.from(
+        this.semanticToFadeOutGradientColorDecorationType2dArray.values(),
+      ).flat(2),
+      ...this.defaultFadeOutGradientColorDecorationType2dArray.flat(),
+      ...Array.from(
+        this.semanticToFadeOutGradientCommonColorDecorationTypes.values(),
+      ).flat(),
+      ...this.defaultFadeOutGradientCommonColorDecorationTypes,
 
       // * First Character & Subtext - Solid Color
       ...this.solidColorDecorationTypes,
@@ -699,31 +395,13 @@ class DecorationManager implements IDecorationManager {
     this.hashingCache.clear();
   }
 
-  private _initializeFadeIn() {
+  private _initializeFadeInGradientColor() {
     const fadeInGradientSteps = this.extensionConfig.fadeInGradientSteps;
-    if (fadeInGradientSteps === undefined || fadeInGradientSteps.length < 16) {
-      throw new Error("Fade in gradient steps are not provided"); // TODO (WJ): update message
-    }
     const gradientColors = this.extensionConfig.gradientColors;
-    if (gradientColors === undefined || !Boolean(gradientColors)) {
-      throw new Error("Gradient colors are not provided"); // TODO (WJ): update message
-    }
     const semanticForegroundColors =
       this.extensionConfig.semanticForegroundColors;
-    if (
-      semanticForegroundColors === undefined ||
-      !Boolean(semanticForegroundColors)
-    ) {
-      throw new Error("Semantic foreground colors are not provided"); // TODO (WJ): update message
-    }
     const defaultSemanticForegroundColor =
       this.extensionConfig.defaultSemanticForegroundColor;
-    if (
-      defaultSemanticForegroundColor === undefined ||
-      !Boolean(semanticForegroundColors)
-    ) {
-      throw new Error("Default semantic foreground color is not provided"); // TODO (WJ): update message
-    }
 
     // each semantic token type & modifiers to foreground color
     for (const semanticCode in semanticForegroundColors) {
@@ -751,13 +429,15 @@ class DecorationManager implements IDecorationManager {
           stepIndex++
         ) {
           const alpha = fadeInGradientSteps[stepIndex];
-          const mixedColor = colorAlphaMixing(
+          let mixedColor = colorAlphaMixing(
             gradientColors[colorIndex],
             foregroundColor,
             alpha,
           );
           if (mixedColor === null) {
-            throw new Error("Mixed color is null"); // TODO (WJ): update message
+            const errorMessage = `Mixed color is null. Generated from ${gradientColors[colorIndex]} and ${foregroundColor} with alpha ${alpha}.`;
+            this.error(errorMessage);
+            mixedColor = "#FF0000";
           }
           const colorDecorationOption: ThemableDecorationRenderOptions = {
             color: mixedColor,
@@ -786,13 +466,15 @@ class DecorationManager implements IDecorationManager {
         stepIndex++
       ) {
         const alpha = fadeInGradientSteps[stepIndex];
-        const mixedColor = colorAlphaMixing(
+        let mixedColor = colorAlphaMixing(
           gradientColors[colorIndex],
           defaultSemanticForegroundColor,
           alpha,
         );
         if (mixedColor === null) {
-          throw new Error("Mixed color is null");
+          const errorMessage = `Mixed color is null. Generated from ${gradientColors[colorIndex]} and ${defaultSemanticForegroundColor} with alpha ${alpha}.`;
+          this.error(errorMessage);
+          mixedColor = "#FF0000";
         }
         const colorDecorationOption: ThemableDecorationRenderOptions = {
           color: mixedColor,
@@ -806,6 +488,292 @@ class DecorationManager implements IDecorationManager {
       DEFAULT_SEMANTIC_KEY,
       this.defaultFadeInGradientColorDecorationType2dArray,
     );
+  }
+
+  private _initializeFadeOutGradientColor() {
+    const fadeOutGradientSteps = this.extensionConfig.fadeOutGradientSteps;
+    const gradientColors = this.extensionConfig.gradientColors;
+    const semanticForegroundColors =
+      this.extensionConfig.semanticForegroundColors;
+    const defaultSemanticForegroundColor =
+      this.extensionConfig.defaultSemanticForegroundColor;
+
+    // each semantic token type & modifiers to foreground color
+    for (const semanticCode in semanticForegroundColors) {
+      const foregroundColor = semanticForegroundColors[semanticCode];
+      const [tokenType, modifiers] = parseSemanticCode(semanticCode);
+      if (tokenType === null) {
+        continue;
+      }
+      const semanticKey = buildSemanticKey(tokenType, modifiers);
+
+      const fadeOutGradientColorDecorationType2dArray = Array.from<
+        TextEditorDecorationType,
+        TextEditorDecorationType[]
+      >({ length: gradientColors.length }, () => []);
+      // each gradient color
+      for (
+        let colorIndex = 0;
+        colorIndex < gradientColors.length;
+        colorIndex++
+      ) {
+        // each fade out alpha value
+        for (
+          let stepIndex = 0;
+          stepIndex < fadeOutGradientSteps.length;
+          stepIndex++
+        ) {
+          const alpha = fadeOutGradientSteps[stepIndex];
+          let mixedColor = colorAlphaMixing(
+            gradientColors[colorIndex],
+            foregroundColor,
+            alpha,
+          );
+          if (mixedColor === null) {
+            const errorMessage = `Mixed color is null. Generated from ${gradientColors[colorIndex]} and ${foregroundColor} with alpha ${alpha}.`;
+            this.error(errorMessage);
+            mixedColor = "#FF0000";
+          }
+          const colorDecorationOption: ThemableDecorationRenderOptions = {
+            color: mixedColor,
+          };
+          fadeOutGradientColorDecorationType2dArray[colorIndex].push(
+            window.createTextEditorDecorationType(colorDecorationOption),
+          );
+        }
+      }
+      this.semanticToFadeOutGradientColorDecorationType2dArray.set(
+        semanticKey,
+        fadeOutGradientColorDecorationType2dArray,
+      );
+    }
+    // default semantic gradient color
+    this.defaultFadeOutGradientColorDecorationType2dArray = Array.from<
+      TextEditorDecorationType,
+      TextEditorDecorationType[]
+    >({ length: gradientColors.length }, () => []);
+    // each gradient color
+    for (let colorIndex = 0; colorIndex < gradientColors.length; colorIndex++) {
+      // each fade out alpha value
+      for (
+        let stepIndex = 0;
+        stepIndex < fadeOutGradientSteps.length;
+        stepIndex++
+      ) {
+        const alpha = fadeOutGradientSteps[stepIndex];
+        let mixedColor = colorAlphaMixing(
+          gradientColors[colorIndex],
+          defaultSemanticForegroundColor,
+          alpha,
+        );
+        if (mixedColor === null) {
+          const errorMessage = `Mixed color is null. Generated from ${gradientColors[colorIndex]} and ${defaultSemanticForegroundColor} with alpha ${alpha}.`;
+          this.error(errorMessage);
+          mixedColor = "#FF0000";
+        }
+        const colorDecorationOption: ThemableDecorationRenderOptions = {
+          color: mixedColor,
+        };
+        this.defaultFadeOutGradientColorDecorationType2dArray[colorIndex].push(
+          window.createTextEditorDecorationType(colorDecorationOption),
+        );
+      }
+    }
+    this.semanticToFadeOutGradientColorDecorationType2dArray.set(
+      DEFAULT_SEMANTIC_KEY,
+      this.defaultFadeOutGradientColorDecorationType2dArray,
+    );
+  }
+
+  private _initializeFadeInGradientCommonColor() {
+    const fadeInGradientSteps = this.extensionConfig.fadeInGradientSteps;
+    const commonColor = this.extensionConfig.commonColor;
+    const semanticForegroundColors =
+      this.extensionConfig.semanticForegroundColors;
+    const defaultSemanticForegroundColor =
+      this.extensionConfig.defaultSemanticForegroundColor;
+
+    // each semantic token type & modifiers to foreground color
+    for (const semanticCode in semanticForegroundColors) {
+      const foregroundColor = semanticForegroundColors[semanticCode];
+      const [tokenType, modifiers] = parseSemanticCode(semanticCode);
+      if (tokenType === null) {
+        continue;
+      }
+      const semanticKey = buildSemanticKey(tokenType, modifiers);
+
+      const fadeInGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
+        [];
+      // each fade in alpha value
+      for (
+        let stepIndex = 0;
+        stepIndex < fadeInGradientSteps.length;
+        stepIndex++
+      ) {
+        const alpha = fadeInGradientSteps[stepIndex];
+        let mixedColor = colorAlphaMixing(commonColor, foregroundColor, alpha);
+        if (mixedColor === null) {
+          const errorMessage = `Mixed color is null. Generated from ${commonColor} and ${foregroundColor} with alpha ${alpha}.`;
+          this.error(errorMessage);
+          mixedColor = "#FF0000";
+        }
+        const colorDecorationOption: ThemableDecorationRenderOptions = {
+          color: mixedColor,
+        };
+        fadeInGradientCommonColorDecorationTypes.push(
+          window.createTextEditorDecorationType(colorDecorationOption),
+        );
+      }
+      this.semanticToFadeInGradientCommonColorDecorationTypes.set(
+        semanticKey,
+        fadeInGradientCommonColorDecorationTypes,
+      );
+    }
+
+    // default semantic gradient common color
+    this.defaultFadeInGradientCommonColorDecorationTypes = [];
+    // each fade in alpha value
+    for (
+      let stepIndex = 0;
+      stepIndex < fadeInGradientSteps.length;
+      stepIndex++
+    ) {
+      const alpha = fadeInGradientSteps[stepIndex];
+      let mixedColor = colorAlphaMixing(
+        commonColor,
+        defaultSemanticForegroundColor,
+        alpha,
+      );
+      if (mixedColor === null) {
+        const errorMessage = `Mixed color is null. Generated from ${commonColor} and ${defaultSemanticForegroundColor} with alpha ${alpha}.`;
+        this.error(errorMessage);
+        mixedColor = "#FF0000";
+      }
+      const colorDecorationOption: ThemableDecorationRenderOptions = {
+        color: mixedColor,
+      };
+      this.defaultFadeInGradientCommonColorDecorationTypes.push(
+        window.createTextEditorDecorationType(colorDecorationOption),
+      );
+    }
+    this.semanticToFadeInGradientCommonColorDecorationTypes.set(
+      DEFAULT_SEMANTIC_KEY,
+      this.defaultFadeInGradientCommonColorDecorationTypes,
+    );
+  }
+
+  private _initializeFadeOutGradientCommonColor() {
+    const fadeOutGradientSteps = this.extensionConfig.fadeOutGradientSteps;
+    const commonColor = this.extensionConfig.commonColor;
+    const semanticForegroundColors =
+      this.extensionConfig.semanticForegroundColors;
+    const defaultSemanticForegroundColor =
+      this.extensionConfig.defaultSemanticForegroundColor;
+
+    // each semantic token type & modifiers to foreground color
+    for (const semanticCode in semanticForegroundColors) {
+      const foregroundColor = semanticForegroundColors[semanticCode];
+      const [tokenType, modifiers] = parseSemanticCode(semanticCode);
+      if (tokenType === null) {
+        continue;
+      }
+      const semanticKey = buildSemanticKey(tokenType, modifiers);
+
+      const fadeOutGradientCommonColorDecorationTypes: TextEditorDecorationType[] =
+        [];
+      // each fade out alpha value
+      for (
+        let stepIndex = 0;
+        stepIndex < fadeOutGradientSteps.length;
+        stepIndex++
+      ) {
+        const alpha = fadeOutGradientSteps[stepIndex];
+        let mixedColor = colorAlphaMixing(commonColor, foregroundColor, alpha);
+        if (mixedColor === null) {
+          const errorMessage = `Mixed color is null. Generated from ${commonColor} and ${foregroundColor} with alpha ${alpha}.`;
+          this.error(errorMessage);
+          mixedColor = "#FF0000";
+        }
+        const colorDecorationOption: ThemableDecorationRenderOptions = {
+          color: mixedColor,
+        };
+        fadeOutGradientCommonColorDecorationTypes.push(
+          window.createTextEditorDecorationType(colorDecorationOption),
+        );
+      }
+      this.semanticToFadeOutGradientCommonColorDecorationTypes.set(
+        semanticKey,
+        fadeOutGradientCommonColorDecorationTypes,
+      );
+    }
+
+    // default semantic gradient common color
+    this.defaultFadeOutGradientCommonColorDecorationTypes = [];
+    // each fade out alpha value
+    for (
+      let stepIndex = 0;
+      stepIndex < fadeOutGradientSteps.length;
+      stepIndex++
+    ) {
+      const alpha = fadeOutGradientSteps[stepIndex];
+      let mixedColor = colorAlphaMixing(
+        commonColor,
+        defaultSemanticForegroundColor,
+        alpha,
+      );
+      if (mixedColor === null) {
+        const errorMessage = `Mixed color is null. Generated from ${commonColor} and ${defaultSemanticForegroundColor} with alpha ${alpha}.`;
+        this.error(errorMessage);
+        mixedColor = "#FF0000";
+      }
+      const colorDecorationOption: ThemableDecorationRenderOptions = {
+        color: mixedColor,
+      };
+      this.defaultFadeOutGradientCommonColorDecorationTypes.push(
+        window.createTextEditorDecorationType(colorDecorationOption),
+      );
+    }
+    this.semanticToFadeOutGradientCommonColorDecorationTypes.set(
+      DEFAULT_SEMANTIC_KEY,
+      this.defaultFadeOutGradientCommonColorDecorationTypes,
+    );
+  }
+
+  private _initializeSolidColor() {
+    const solidColors = this.extensionConfig.solidColors;
+    for (let i = 0; i < solidColors.length; i++) {
+      const colorDecorationOption: ThemableDecorationRenderOptions = {
+        color: solidColors[i],
+      };
+      this.solidColorDecorationTypes.push(
+        window.createTextEditorDecorationType(colorDecorationOption),
+      );
+    }
+  }
+
+  private _initializeSolidCommonColor() {
+    const commonColor = this.extensionConfig.commonColor;
+    const colorDecorationOption: ThemableDecorationRenderOptions = {
+      color: commonColor,
+    };
+    this.solidCommonColorDecorationType = window.createTextEditorDecorationType(
+      colorDecorationOption,
+    );
+  }
+
+  private _initializeEmoji() {
+    for (let i = 0; i < EMOJIS.length; i++) {
+      // TODO (WJ): use configuration
+      const emojiDecorationOption: ThemableDecorationRenderOptions = {
+        before: {
+          contentText: EMOJIS[i],
+          margin: "0 2px 0 0",
+        },
+      };
+      this.emojiDecorationTypes.push(
+        window.createTextEditorDecorationType(emojiDecorationOption),
+      );
+    }
   }
 }
 

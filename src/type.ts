@@ -7,6 +7,9 @@ export type DecorationProcessor = (
 
 export interface IDecorationManager {
   extensionConfig: ExtensionConfig;
+  gradientColorSize: number;
+  fadeOutGradientStepSize: number;
+  fadeInGradientStepSize: number;
 
   // * Fade In
   semanticToFadeInGradientColorDecorationType2dArray: Map<
@@ -34,10 +37,6 @@ export interface IDecorationManager {
 
   // * Emoji
   emojiDecorationTypes: TextEditorDecorationType[];
-
-  gradientColorSize: number;
-  fadeOutGradientStepSize: number;
-  fadeInGradientStepSize: number;
 
   getHash(text: string, max: number): number;
   getKeyAndFadeOutGradientColorDecorationType2dArray(

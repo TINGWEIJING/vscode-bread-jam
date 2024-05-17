@@ -353,7 +353,6 @@ export function buildDebouncedDecorateVariablesFunction(
     if (editor === undefined) {
       return;
     }
-    console.time("Retrieve raw tokens"); // TODO (WJ): remove
     const uri = editor.document.uri;
 
     const [legend, semanticTokens] = await Promise.all([
@@ -366,11 +365,9 @@ export function buildDebouncedDecorateVariablesFunction(
         uri,
       ),
     ]);
-    console.timeEnd("Retrieve raw tokens");
     if (legend === undefined || semanticTokens === undefined) {
       return;
     }
-    console.time("Preprocess tokens");
     const result = decodeSemanticTokensData(
       legend,
       semanticTokens.data,
@@ -383,9 +380,7 @@ export function buildDebouncedDecorateVariablesFunction(
     const variableTokens = result.filter((token) =>
       targetedSemanticTokenTypes.includes(token.tokenType),
     );
-    console.timeEnd("Preprocess tokens");
 
-    console.time("decorate");
     const [resultDecorationTypes, resultDecorationRange2dArray] =
       decorationProcessor(variableTokens, decorationManager);
     for (let i = 0; i < resultDecorationTypes.length; i++) {
@@ -394,7 +389,6 @@ export function buildDebouncedDecorateVariablesFunction(
         resultDecorationRange2dArray[i],
       );
     }
-    console.timeEnd("decorate");
   }, delay);
 }
 
