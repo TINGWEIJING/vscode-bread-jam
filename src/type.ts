@@ -6,7 +6,8 @@ export type DecorationProcessor = (
 ) => [TextEditorDecorationType[], Range[][]];
 
 export interface IDecorationManager {
-  extensionConfig: Partial<ExtensionConfig>;
+  extensionConfig: ExtensionConfig;
+
   // * Fade In
   semanticToFadeInGradientColorDecorationType2dArray: Map<
     string,

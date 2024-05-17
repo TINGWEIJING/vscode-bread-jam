@@ -4,11 +4,10 @@ import type {
   TextEditorDecorationType,
   ThemableDecorationRenderOptions,
 } from "vscode";
-import { window, workspace } from "vscode";
+import { window } from "vscode";
 import {
   DEFAULT_SEMANTIC_KEY,
   EMOJIS,
-  EXTENSION_NAME,
   RENDER_PATTERN_LABEL,
   WORKSPACE_STATE_KEYS,
 } from "./constant";
@@ -31,18 +30,15 @@ import {
 
 class DecorationManager implements IDecorationManager {
   private static instance: DecorationManager;
-
   public static isConstructed: boolean = false;
   public static isInitialized: boolean = false;
-  private log: (message: string) => void = (message: string) => {
-    // TODO (WJ): move to constructor
-    throw new Error("Log function is not initialized");
-  };
-  private error: (message: string) => void = (message: string) => {
-    throw new Error("Error function is not initialized");
-  };
 
-  public extensionConfig: Partial<ExtensionConfig> = {};
+  /* Variables below will be initialized in constructor only */
+  public extensionConfig: ExtensionConfig;
+  private context: ExtensionContext;
+  private log: (message: string) => void;
+  private error: (message: string) => void;
+
   public currentRenderPattern: string = RENDER_PATTERN_LABEL[0];
   public debouncedDecorateVariables: (editor: TextEditor | undefined) => void =
     () => {};
@@ -94,25 +90,40 @@ class DecorationManager implements IDecorationManager {
 
   private hashingCache: Map<string, number> = new Map();
 
-  private constructor() {}
-
-  public static construct(
+  private constructor(
+    extensionConfig: ExtensionConfig,
+    context: ExtensionContext,
     log: (message: string) => void,
     error: (message: string) => void,
-    context: ExtensionContext,
-    extensionConfig: ExtensionConfig,
   ) {
-    // TODO (WJ): update constructor
-    const instance = new DecorationManager();
-    instance.log = log;
-    instance.error = error;
+    this.extensionConfig = extensionConfig;
+    this.context = context;
+    this.log = log;
+    this.error = error;
+  }
+
+  public static construct(
+    extensionConfig: ExtensionConfig,
+    context: ExtensionContext,
+    log: (message: string) => void,
+    error: (message: string) => void,
+  ) {
+    if (this.isConstructed) {
+      throw new Error("DecorationManager is already constructed.");
+    }
+    const instance = new DecorationManager(
+      extensionConfig,
+      context,
+      log,
+      error,
+    );
     this.isConstructed = true;
     DecorationManager.instance = instance;
   }
 
   public static getInstance(): DecorationManager {
-    if (!DecorationManager.instance) {
-      DecorationManager.instance = new DecorationManager();
+    if (!this.isConstructed) {
+      throw new Error("DecorationManager is not constructed yet.");
     }
     return DecorationManager.instance;
   }
@@ -121,8 +132,12 @@ class DecorationManager implements IDecorationManager {
     DecorationManager.getInstance().previewRenderPattern(renderPatternLabel);
   }
 
-  public static initialize(context?: ExtensionContext) {
-    DecorationManager.getInstance().initialize(context);
+  public static initialize() {
+    if (this.isInitialized) {
+      throw new Error("DecorationManager is already initialized.");
+    }
+    DecorationManager.getInstance().initialize();
+    this.isInitialized = true;
   }
 
   public static cleanDecorations(editor: TextEditor) {
@@ -131,10 +146,15 @@ class DecorationManager implements IDecorationManager {
 
   public static clear() {
     DecorationManager.getInstance().clear();
+    this.isInitialized = false;
   }
 
   public static debouncedDecorateVariables(editor?: TextEditor) {
     DecorationManager.getInstance().debouncedDecorateVariables(editor);
+  }
+
+  public static updateExtensionConfig(extensionConfig: ExtensionConfig) {
+    DecorationManager.getInstance().updateExtensionConfig(extensionConfig);
   }
 
   public getHash(text: string, max: number): number {
@@ -211,32 +231,23 @@ class DecorationManager implements IDecorationManager {
     }
   }
 
-  private initialize(context?: ExtensionContext) {
-    // TODO (WJ): split into smaller functions
-    const extensionConfig = workspace
-      .getConfiguration()
-      .get<Partial<ExtensionConfig>>(EXTENSION_NAME); // TODO (WJ): update configuration key
-    if (extensionConfig === undefined) {
-      throw new Error("Unable to read configuration.");
-      // TODO (WJ): add notification
-    }
-
+  private updateExtensionConfig(extensionConfig: ExtensionConfig) {
     this.extensionConfig = extensionConfig;
+  }
 
+  // TODO (WJ): split into smaller functions
+  private initialize() {
     // Update current render pattern only when context is provided
-    if (context !== undefined) {
-      const workspaceStateRenderPattern = context.workspaceState.get<
-        string | undefined
-      >(WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN);
-
-      if (workspaceStateRenderPattern !== undefined) {
-        this.currentRenderPattern = workspaceStateRenderPattern;
-      } else {
-        context.workspaceState.update(
-          WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
-          this.currentRenderPattern,
-        );
-      }
+    const workspaceStateRenderPattern = this.context.workspaceState.get<string>(
+      WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
+    );
+    if (workspaceStateRenderPattern !== undefined) {
+      this.currentRenderPattern = workspaceStateRenderPattern;
+    } else {
+      this.context.workspaceState.update(
+        WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
+        this.currentRenderPattern,
+      );
     }
 
     const solidColors = this.extensionConfig.solidColors ?? [];

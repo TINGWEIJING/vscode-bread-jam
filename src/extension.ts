@@ -7,20 +7,34 @@ import {
   WORKSPACE_STATE_KEYS,
 } from "./constant";
 import DecorationManager from "./decorationManager";
+import type { ExtensionConfig } from "./type";
 
 export async function activate(context: ExtensionContext) {
-  DecorationManager.initialize(context);
   const isExtensionOn = context.workspaceState.get<boolean>(
     WORKSPACE_STATE_KEYS.IS_EXTENSION_ON,
   );
   if (isExtensionOn === undefined) {
     context.workspaceState.update(WORKSPACE_STATE_KEYS.IS_EXTENSION_ON, true);
   }
-  // const logChannel = window.createOutputChannel(`${EXTENSION_NAME} Log`, {
-  //   log: true,
-  // });
-  // logChannel.appendLine("Log Channel");
-  // window.showErrorMessage("Error Notification");
+
+  const extensionConfig = workspace
+    .getConfiguration()
+    .get<Partial<ExtensionConfig>>(EXTENSION_NAME); // TODO (WJ): update configuration key
+  if (extensionConfig === undefined) {
+    throw new Error("Unable to read configuration.");
+  }
+  // TODO (WJ): add configuration validation
+
+  const logChannel = window.createOutputChannel(`${EXTENSION_NAME} Log`, {
+    log: true,
+  });
+  DecorationManager.construct(
+    extensionConfig as unknown as ExtensionConfig,
+    context,
+    (message) => logChannel.appendLine(message),
+    (message) => window.showErrorMessage(message),
+  );
+  DecorationManager.initialize();
 
   const promptRenderPatternSelectionCommandDisposable =
     commands.registerCommand(
@@ -66,7 +80,7 @@ export async function activate(context: ExtensionContext) {
         });
         quickPick.onDidHide((e) => {
           DecorationManager.clear();
-          DecorationManager.initialize(context);
+          DecorationManager.initialize();
           const activeEditor = window.activeTextEditor;
           if (activeEditor !== undefined) {
             DecorationManager.debouncedDecorateVariables(activeEditor);
@@ -160,7 +174,17 @@ export async function activate(context: ExtensionContext) {
       if (!isConfigurationChanged) {
         return;
       }
+      const extensionConfig = workspace
+        .getConfiguration()
+        .get<Partial<ExtensionConfig>>(EXTENSION_NAME); // TODO (WJ): update configuration key
+      if (extensionConfig === undefined) {
+        throw new Error("Unable to read configuration.");
+      }
+      // TODO (WJ): add configuration validation
       DecorationManager.clear();
+      DecorationManager.updateExtensionConfig(
+        extensionConfig as unknown as ExtensionConfig,
+      );
       DecorationManager.initialize();
       const activeEditor = window.activeTextEditor;
       if (activeEditor === undefined || !isExtensionOn) {

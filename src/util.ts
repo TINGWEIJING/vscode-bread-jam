@@ -18,6 +18,8 @@ import type {
   SemanticCodeToken,
 } from "./type";
 
+// TODO (WJ): validate all configurations
+
 /**
  * Pearson hashing algorithm.
  * TODO (WJ): validate output
