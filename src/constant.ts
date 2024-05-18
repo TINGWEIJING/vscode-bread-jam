@@ -1,7 +1,7 @@
 import { QuickPickItemKind, type QuickPickItem } from "vscode";
 import type { ExtensionConfig } from "./type";
 
-export const EXTENSION_NAME: string = "color-variable-alpha"; // TODO (WJ): update
+export const EXTENSION_NAME: string = "bread-jam";
 
 export const EXTENSION_ID: string = `tingcode.com.${EXTENSION_NAME}`;
 

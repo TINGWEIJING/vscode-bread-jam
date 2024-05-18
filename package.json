@@ -1,7 +1,7 @@
 {
-  "name": "color-variable-alpha",
-  "displayName": "Color Variable Alpha",
-  "description": "Color variable by token",
+  "name": "bread-jam",
+  "displayName": "Bread Jam",
+  "description": "Make your code easier to read by using color-rendered variables.",
   "version": "0.0.1",
   "publisher": "tingcode.com",
   "engines": {
@@ -18,40 +18,40 @@
   "contributes": {
     "commands": [
       {
-        "command": "color-variable-alpha.promptRenderPatternSelection",
-        "title": "Color Variable: Select Render Pattern"
+        "command": "bread-jam.promptRenderPatternSelection",
+        "title": "Bread Jam: Select Render Pattern"
       },
       {
-        "command": "color-variable-alpha.clearRenderingTemporarily",
-        "title": "Color Variable: Clear Rendering Temporarily"
+        "command": "bread-jam.clearRenderingTemporarily",
+        "title": "Bread Jam: Clear Rendering Temporarily"
       },
       {
-        "command": "color-variable-alpha.reloadRendering",
-        "title": "Color Variable: Reload Rendering"
+        "command": "bread-jam.reloadRendering",
+        "title": "Bread Jam: Reload Rendering"
       },
       {
-        "command": "color-variable-alpha.turnOnOrOff",
-        "title": "Color Variable: Turn On/Off"
+        "command": "bread-jam.turnOnOrOff",
+        "title": "Bread Jam: Turn On/Off"
       }
     ],
     "configuration": {
-      "title": "Color Variable Alpha",
+      "title": "Bread Jam",
       "properties": {
-        "color-variable-alpha.renderDelay": {
+        "bread-jam.renderDelay": {
           "order": 0,
           "type": "integer",
           "multipleOf": 10,
           "minimum": 100,
           "default": 500,
-          "markdownDescription": "Delay in milliseconds before rendering the color variable. (Debounce)"
+          "markdownDescription": "Delay in milliseconds before rendering. (Debounce)"
         },
-        "color-variable-alpha.ignoreFirstSubtoken": {
+        "bread-jam.ignoreFirstSubtoken": {
           "order": 1,
           "type": "boolean",
           "default": false,
           "markdownDescription": "Ignore the first subtoken. \n\nExample: Given `hasCompleted` variable name, `has` is the first subtoken."
         },
-        "color-variable-alpha.semanticForegroundColors": {
+        "bread-jam.semanticForegroundColors": {
           "order": 2,
           "type": "object",
           "default": {
@@ -71,21 +71,21 @@
           "additionalProperties": false,
           "markdownDescription": "❗Experimental❗ \n\nSemantic token foreground colors for fade in/out gradient. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
         },
-        "color-variable-alpha.defaultSemanticForegroundColor": {
+        "bread-jam.defaultSemanticForegroundColor": {
           "order": 3,
           "type": "string",
           "default": "#569CD6",
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "markdownDescription": "❗Experimental❗ \n\nDefault color for semantic foreground color. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
         },
-        "color-variable-alpha.commonColor": {
+        "bread-jam.commonColor": {
           "order": 4,
           "type": "string",
           "default": "#FAFAFA",
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "markdownDescription": "❗Experimental❗ \n\nCommon color. \n\nAffected render patterns: \n- 03 Subtext - Fade In Gradient - Commonly \n- 06 Subtext - Fade Out Gradient - Commonly \n- 09 First Character - Solid Color - Commonly"
         },
-        "color-variable-alpha.gradientColors": {
+        "bread-jam.gradientColors": {
           "order": 5,
           "type": "array",
           "items": {
@@ -102,7 +102,7 @@
           ],
           "markdownDescription": "❗Experimental❗ \n\nGradient colors. Will use solid colors if is empty. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text"
         },
-        "color-variable-alpha.solidColors": {
+        "bread-jam.solidColors": {
           "order": 6,
           "type": "array",
           "items": {
@@ -119,7 +119,7 @@
           ],
           "markdownDescription": "❗Experimental❗ \n\nSolid colors. \n\nAffected render patterns: \n- 07 First Character - Solid Color - Unique Subtext \n- 08 First Character - Solid Color - Unique Text"
         },
-        "color-variable-alpha.fadeInGradientSteps": {
+        "bread-jam.fadeInGradientSteps": {
           "order": 7,
           "type": "array",
           "items": {
@@ -150,7 +150,7 @@
           "maxItems": 16,
           "markdownDescription": "❗Experimental❗ \n\nGradient steps for fade in. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly"
         },
-        "color-variable-alpha.fadeOutGradientSteps": {
+        "bread-jam.fadeOutGradientSteps": {
           "order": 8,
           "type": "array",
           "items": {
@@ -181,7 +181,7 @@
           "maxItems": 16,
           "markdownDescription": "❗Experimental❗ \n\nGradient steps for fade out. \n\nAffected render patterns: \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
         },
-        "color-variable-alpha.emojis": {
+        "bread-jam.emojis": {
           "order": 9,
           "type": "array",
           "items": {
@@ -319,7 +319,7 @@
           ],
           "markdownDescription": "❗Experimental❗ \n\nEmojis. This should only be modified via the JSON settings for precise control. \n\nAffected render patterns: \n- 11 Whole Text - Emoji"
         },
-        "color-variable-alpha.targetedSemanticTokenTypes": {
+        "bread-jam.targetedSemanticTokenTypes": {
           "order": 10,
           "type": "array",
           "items": {
@@ -358,7 +358,7 @@
           "uniqueItems": true,
           "markdownDescription": "❗Experimental❗ \n\nTargeted Semantic token types to render."
         },
-        "color-variable-alpha.permutationTable": {
+        "bread-jam.permutationTable": {
           "order": 11,
           "type": "array",
           "items": {
@@ -634,7 +634,7 @@
     },
     "keybindings": [
       {
-        "command": "color-variable-alpha.turnOnOrOff",
+        "command": "bread-jam.turnOnOrOff",
         "key": "alt+b alt+j"
       }
     ]
