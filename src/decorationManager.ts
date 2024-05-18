@@ -7,7 +7,6 @@ import type {
 import { window } from "vscode";
 import {
   DEFAULT_SEMANTIC_KEY,
-  EMOJIS,
   RENDER_PATTERN_LABEL,
   WORKSPACE_STATE_KEYS,
 } from "./constant";
@@ -762,11 +761,11 @@ class DecorationManager implements IDecorationManager {
   }
 
   private _initializeEmoji() {
-    for (let i = 0; i < EMOJIS.length; i++) {
-      // TODO (WJ): use configuration
+    const emojis = this.extensionConfig.emojis;
+    for (let i = 0; i < emojis.length; i++) {
       const emojiDecorationOption: ThemableDecorationRenderOptions = {
         before: {
-          contentText: EMOJIS[i],
+          contentText: emojis[i],
           margin: "0 2px 0 0",
         },
       };

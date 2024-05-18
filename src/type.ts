@@ -69,17 +69,15 @@ export interface SemanticCodeToken {
 // NOTE: Always refer package.json for the latest configuration
 export interface ExtensionConfig {
   renderDelay: number;
-  ignoreFirstSubToken: boolean;
-  excludeFileExtensions: string[];
-  defaultPattern: string;
-  solidColors: string[];
-  gradientColors: string[];
-  commonColor: string;
-  fadeInGradientSteps: number[];
-  fadeOutGradientSteps: number[];
-  targetedSemanticTokenTypes: string[];
-  targetedSemanticModifiers: string[]; // TODO (WJ): figure how to handle empty modifier
+  ignoreFirstSubtoken: boolean;
   semanticForegroundColors: { [key: string]: string };
   defaultSemanticForegroundColor: string;
+  commonColor: string;
+  gradientColors: string[];
+  solidColors: string[];
+  fadeInGradientSteps: number[];
+  fadeOutGradientSteps: number[];
+  emojis: string[];
+  targetedSemanticTokenTypes: string[];
   permutationTable: number[];
 }

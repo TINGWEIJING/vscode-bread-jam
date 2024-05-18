@@ -8,6 +8,7 @@ import type {
 import { commands, Range } from "vscode";
 import {
   DEFAULT_SEMANTIC_KEY,
+  FAULTY_EXTENSION_CONFIG,
   REGEX_LITERAL,
   VSCODE_COMMANDS,
 } from "./constant";
@@ -18,11 +19,184 @@ import type {
   SemanticCodeToken,
 } from "./type";
 
-// TODO (WJ): validate all configurations
+export function validateExtensionConfig(
+  extensionConfig: Partial<ExtensionConfig>,
+  error: (message: string) => void,
+): ExtensionConfig {
+  let clonedExtensionConfig: Partial<ExtensionConfig> = JSON.parse(
+    JSON.stringify(extensionConfig),
+  );
+  const renderDelay = clonedExtensionConfig.renderDelay;
+  if (
+    !Number.isInteger(renderDelay) ||
+    !Boolean(renderDelay) ||
+    renderDelay! < 100
+  ) {
+    error("`renderDelay` must be an integer greater than or equal to 100.");
+    clonedExtensionConfig.renderDelay = FAULTY_EXTENSION_CONFIG.renderDelay;
+  }
+
+  const semanticForegroundColors =
+    clonedExtensionConfig.semanticForegroundColors;
+  if (!Boolean(semanticForegroundColors)) {
+    error("`semanticForegroundColors` must be defined.");
+    clonedExtensionConfig.semanticForegroundColors =
+      FAULTY_EXTENSION_CONFIG.semanticForegroundColors;
+  } else {
+    let isFaulty = false;
+    for (const [semanticKey, hexColor] of Object.entries(
+      semanticForegroundColors!,
+    )) {
+      if (!REGEX_LITERAL.HEX_RGB.test(hexColor)) {
+        error(
+          `\`${hexColor}\` is not a valid color code for the semantic key \`${semanticKey}\`.`,
+        );
+        isFaulty = true;
+        break;
+      }
+    }
+    if (isFaulty) {
+      clonedExtensionConfig.semanticForegroundColors =
+        FAULTY_EXTENSION_CONFIG.semanticForegroundColors;
+    }
+  }
+
+  const defaultSemanticForegroundColor =
+    clonedExtensionConfig.defaultSemanticForegroundColor;
+  if (
+    !Boolean(defaultSemanticForegroundColor) ||
+    !REGEX_LITERAL.HEX_RGB.test(defaultSemanticForegroundColor!)
+  ) {
+    error(
+      `\`${defaultSemanticForegroundColor}\` is not a valid color code for \`defaultSemanticForegroundColor\`.`,
+    );
+    clonedExtensionConfig.defaultSemanticForegroundColor =
+      FAULTY_EXTENSION_CONFIG.defaultSemanticForegroundColor;
+  }
+
+  const commonColor = clonedExtensionConfig.commonColor;
+  if (!Boolean(commonColor) || !REGEX_LITERAL.HEX_RGB.test(commonColor!)) {
+    error(`\`${commonColor}\` is not a valid color code for \`commonColor\`.`);
+    clonedExtensionConfig.commonColor = FAULTY_EXTENSION_CONFIG.commonColor;
+  }
+
+  const gradientColors = clonedExtensionConfig.gradientColors;
+  if (!Boolean(gradientColors)) {
+    error("`gradientColors` must be defined.");
+    clonedExtensionConfig.gradientColors =
+      FAULTY_EXTENSION_CONFIG.gradientColors;
+  } else {
+    let isFaulty = false;
+    for (let i = 0; i < gradientColors!.length; i++) {
+      const hexColor = gradientColors![i];
+      if (!REGEX_LITERAL.HEX_RGB.test(hexColor)) {
+        error(
+          `\`${hexColor}\` is not a valid color code for \`gradientColors[${i}]\`.`,
+        );
+        isFaulty = true;
+        break;
+      }
+    }
+    if (isFaulty) {
+      clonedExtensionConfig.gradientColors =
+        FAULTY_EXTENSION_CONFIG.gradientColors;
+    }
+  }
+
+  const solidColors = clonedExtensionConfig.solidColors;
+  if (!Boolean(solidColors)) {
+    error("`solidColors` must be defined.");
+    clonedExtensionConfig.solidColors = FAULTY_EXTENSION_CONFIG.solidColors;
+  } else {
+    let isFaulty = false;
+    for (let i = 0; i < solidColors!.length; i++) {
+      const hexColor = solidColors![i];
+      if (!REGEX_LITERAL.HEX_RGB.test(hexColor)) {
+        error(
+          `\`${hexColor}\` is not a valid color code for \`solidColors[${i}]\`.`,
+        );
+        isFaulty = true;
+        break;
+      }
+    }
+    if (isFaulty) {
+      clonedExtensionConfig.solidColors = FAULTY_EXTENSION_CONFIG.solidColors;
+    }
+  }
+
+  const fadeInGradientSteps = clonedExtensionConfig.fadeInGradientSteps;
+  if (!Boolean(fadeInGradientSteps)) {
+    error("`fadeInGradientSteps` must be defined.");
+    clonedExtensionConfig.fadeInGradientSteps =
+      FAULTY_EXTENSION_CONFIG.fadeInGradientSteps;
+  } else {
+    let isFaulty = false;
+    for (let i = 0; i < fadeInGradientSteps!.length; i++) {
+      const step = fadeInGradientSteps![i];
+      if (!Number.isFinite(step) || step > 1 || step < 0) {
+        error(
+          `\`${step}\` is not a valid integer for \`fadeInGradientSteps[${i}]\`.`,
+        );
+        isFaulty = true;
+        break;
+      }
+    }
+    if (isFaulty) {
+      clonedExtensionConfig.fadeInGradientSteps =
+        FAULTY_EXTENSION_CONFIG.fadeInGradientSteps;
+    }
+  }
+
+  const fadeOutGradientSteps = clonedExtensionConfig.fadeOutGradientSteps;
+  if (!Boolean(fadeOutGradientSteps)) {
+    error("`fadeOutGradientSteps` must be defined.");
+    clonedExtensionConfig.fadeOutGradientSteps =
+      FAULTY_EXTENSION_CONFIG.fadeOutGradientSteps;
+  } else {
+    let isFaulty = false;
+    for (let i = 0; i < fadeOutGradientSteps!.length; i++) {
+      const step = fadeOutGradientSteps![i];
+      if (!Number.isFinite(step) || step > 1 || step < 0) {
+        error(
+          `\`${step}\` is not a valid integer for \`fadeOutGradientSteps[${i}]\`.`,
+        );
+        isFaulty = true;
+        break;
+      }
+    }
+    if (isFaulty) {
+      clonedExtensionConfig.fadeOutGradientSteps =
+        FAULTY_EXTENSION_CONFIG.fadeOutGradientSteps;
+    }
+  }
+
+  const emojis = clonedExtensionConfig.emojis;
+  if (!Boolean(emojis)) {
+    error("`emojis` must be defined.");
+    clonedExtensionConfig.emojis = FAULTY_EXTENSION_CONFIG.emojis;
+  }
+
+  const targetedSemanticTokenTypes =
+    clonedExtensionConfig.targetedSemanticTokenTypes;
+  if (!Boolean(targetedSemanticTokenTypes)) {
+    error("`targetedSemanticTokenTypes` must be defined.");
+    clonedExtensionConfig.targetedSemanticTokenTypes =
+      FAULTY_EXTENSION_CONFIG.targetedSemanticTokenTypes;
+  }
+
+  const permutationTable = clonedExtensionConfig.permutationTable;
+  if (!Boolean(permutationTable) || permutationTable!.length !== 256) {
+    error("`permutationTable` must be defined with 256 integers.");
+    clonedExtensionConfig.permutationTable =
+      FAULTY_EXTENSION_CONFIG.permutationTable;
+  }
+
+  return clonedExtensionConfig as ExtensionConfig;
+}
 
 /**
  * Pearson hashing algorithm.
- * TODO (WJ): validate output
+ *
  * @param input
  * @returns integer in range 0 - 255
  */

@@ -8,6 +8,7 @@ import {
 } from "./constant";
 import DecorationManager from "./decorationManager";
 import type { ExtensionConfig } from "./type";
+import { validateExtensionConfig } from "./util";
 
 let logChannel: LogOutputChannel;
 
@@ -25,14 +26,17 @@ export async function activate(context: ExtensionContext) {
   if (extensionConfig === undefined) {
     throw new Error("Unable to read configuration.");
   }
-  // TODO (WJ): add configuration validation
+  const validatedExtensionConfig = validateExtensionConfig(
+    extensionConfig,
+    (message) => window.showErrorMessage(message),
+  );
 
   logChannel = window.createOutputChannel(`${EXTENSION_NAME} Log`, {
     log: true,
   });
   logChannel.clear();
   DecorationManager.construct(
-    extensionConfig as unknown as ExtensionConfig,
+    validatedExtensionConfig,
     context,
     (message) => logChannel.appendLine(message),
     (message) => window.showErrorMessage(message),
@@ -183,11 +187,12 @@ export async function activate(context: ExtensionContext) {
       if (extensionConfig === undefined) {
         throw new Error("Unable to read configuration.");
       }
-      // TODO (WJ): add configuration validation
-      DecorationManager.clear();
-      DecorationManager.updateExtensionConfig(
-        extensionConfig as unknown as ExtensionConfig,
+      const validatedExtensionConfig = validateExtensionConfig(
+        extensionConfig,
+        (message) => window.showErrorMessage(message),
       );
+      DecorationManager.clear();
+      DecorationManager.updateExtensionConfig(validatedExtensionConfig);
       DecorationManager.initialize();
       const activeEditor = window.activeTextEditor;
       if (activeEditor === undefined || !isExtensionOn) {

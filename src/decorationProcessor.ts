@@ -49,7 +49,7 @@ export function decorate_subText_fadeInGradient_uniqueSubText(
   decorationManager: IDecorationManager,
 ): [TextEditorDecorationType[], Range[][]] {
   const ignoreFirstSubToken =
-    decorationManager.extensionConfig.ignoreFirstSubToken;
+    decorationManager.extensionConfig.ignoreFirstSubtoken;
 
   const gradientColorSize = decorationManager.gradientColorSize;
   const gradientStepSize = decorationManager.fadeInGradientStepSize;
@@ -137,7 +137,7 @@ export function decorate_subText_fadeInGradient_uniqueText(
   decorationManager: IDecorationManager,
 ): [TextEditorDecorationType[], Range[][]] {
   const ignoreFirstSubToken =
-    decorationManager.extensionConfig.ignoreFirstSubToken;
+    decorationManager.extensionConfig.ignoreFirstSubtoken;
 
   const gradientColorSize = decorationManager.gradientColorSize;
   const gradientStepSize = decorationManager.fadeInGradientStepSize;
@@ -222,7 +222,7 @@ export function decorate_subText_fadeInGradient_commonly(
   decorationManager: IDecorationManager,
 ): [TextEditorDecorationType[], Range[][]] {
   const ignoreFirstSubToken =
-    decorationManager.extensionConfig.ignoreFirstSubToken;
+    decorationManager.extensionConfig.ignoreFirstSubtoken;
 
   const gradientStepSize = decorationManager.fadeInGradientStepSize;
   const semanticToRange2dArray: Map<string, Range[][]> = new Map();
@@ -300,7 +300,7 @@ export function decorate_subText_fadeOutGradient_uniqueSubText(
   decorationManager: IDecorationManager,
 ): [TextEditorDecorationType[], Range[][]] {
   const ignoreFirstSubToken =
-    decorationManager.extensionConfig.ignoreFirstSubToken;
+    decorationManager.extensionConfig.ignoreFirstSubtoken;
 
   const gradientColorSize = decorationManager.gradientColorSize;
   const gradientStepSize = decorationManager.fadeOutGradientStepSize;
@@ -388,7 +388,7 @@ export function decorate_subText_fadeOutGradient_uniqueText(
   decorationManager: IDecorationManager,
 ): [TextEditorDecorationType[], Range[][]] {
   const ignoreFirstSubToken =
-    decorationManager.extensionConfig.ignoreFirstSubToken;
+    decorationManager.extensionConfig.ignoreFirstSubtoken;
 
   const gradientColorSize = decorationManager.gradientColorSize;
   const gradientStepSize = decorationManager.fadeOutGradientStepSize;
@@ -473,7 +473,7 @@ export function decorate_subText_fadeOutGradient_commonly(
   decorationManager: IDecorationManager,
 ): [TextEditorDecorationType[], Range[][]] {
   const ignoreFirstSubToken =
-    decorationManager.extensionConfig.ignoreFirstSubToken;
+    decorationManager.extensionConfig.ignoreFirstSubtoken;
 
   const gradientStepSize = decorationManager.fadeOutGradientStepSize;
   const semanticToRange2dArray: Map<string, Range[][]> = new Map();
@@ -553,7 +553,7 @@ export function decorate_firstCharacter_solidColor_uniqueSubText(
 ): [TextEditorDecorationType[], Range[][]] {
   const solidColorDecorationTypes = decorationManager.solidColorDecorationTypes;
   const ignoreFirstSubToken =
-    decorationManager.extensionConfig.ignoreFirstSubToken;
+    decorationManager.extensionConfig.ignoreFirstSubtoken;
 
   const decorationRange2dArray: Range[][] = Array.from(
     { length: solidColorDecorationTypes.length },
@@ -655,7 +655,7 @@ export function decorate_firstCharacter_solidColor_commonly(
   const solidCommonColorDecorationType =
     decorationManager.solidCommonColorDecorationType;
   const ignoreFirstSubToken =
-    decorationManager.extensionConfig.ignoreFirstSubToken;
+    decorationManager.extensionConfig.ignoreFirstSubtoken;
 
   const decorationRanges: Range[] = [];
   // each token
@@ -701,7 +701,7 @@ export function decorate_subText_solidColor_uniqueSubText(
 ): [TextEditorDecorationType[], Range[][]] {
   const solidColorDecorationTypes = decorationManager.solidColorDecorationTypes;
   const ignoreFirstSubToken =
-    decorationManager.extensionConfig.ignoreFirstSubToken;
+    decorationManager.extensionConfig.ignoreFirstSubtoken;
 
   const decorationRange2dArray: Range[][] = Array.from(
     { length: solidColorDecorationTypes.length },
