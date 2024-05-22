@@ -21,9 +21,11 @@
 | ---------- | ------------------------------------------------------------------------------------------------------------------------ |
 | TypeScript | [ms-vscode.vscode-typescript-next](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-next) |
 | C++        | [ms-vscode.cpptools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)                             |
+| Dart       | [Dart-Code.dart-code](https://marketplace.visualstudio.com/items?itemName=Dart-Code.dart-code)                           |
 | Java       | [redhat.java](https://marketplace.visualstudio.com/items?itemName=redhat.java)                                           |
 | Python     | [ms-python.python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)                                 |
 | Julia      | [julialang.language-julia](https://marketplace.visualstudio.com/items?itemName=julialang.language-julia)                 |
+| Lua        | [sumneko.lua](https://marketplace.visualstudio.com/items?itemName=sumneko.lua)                                           |
 | R          | [REditorSupport.r](https://marketplace.visualstudio.com/items?itemName=REditorSupport.r)                                 |
 | Ruby       | [Shopify.ruby-lsp](https://marketplace.visualstudio.com/items?itemName=Shopify.ruby-lsp)                                 |
 | Rust       | [rust-lang.rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)                   |
