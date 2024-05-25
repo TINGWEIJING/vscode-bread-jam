@@ -1,8 +1,11 @@
 <!-- omit from toc -->
 # Bread Jam
-<!-- Short description. See supported languages -->
 
-<!-- GIF -->
+This extension provides various render patterns for code components, particularly for variable names, making it easier to differentiate code and enhance readability.
+
+<p align="center" width="100%">
+    <img width="100%" src="https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/images/main-demo.gif?raw=true" alt="Demo">
+</p>
 
 > [!NOTE]
 > Having too much color rendered in your editor may cause eye strain. Please use the <kbd>Alt</kbd> + <kbd>B</kbd>, <kbd>Alt</kbd> + <kbd>J</kbd> (Windows & Linux) or <kbd>⌥</kbd> + <kbd>B</kbd>, <kbd>⌥</kbd> + <kbd>J</kbd> (MacOS) keyboard shortcuts to toggle the extension's effects on and off. You may also adjust number of colors to use in the [extension settings](#extension-settings) to make it easier on your eyes.
@@ -19,20 +22,18 @@
 
 ## Features
 - 11 render patterns to select:
-  1. Subtext - Fade In Gradient - Unique Subtext
-  2. Subtext - Fade In Gradient - Unique Text
-  3. Subtext - Fade In Gradient - Commonly
-  4. Subtext - Fade Out Gradient - Unique Subtext
-  5. Subtext - Fade Out Gradient - Unique Text
-  6. Subtext - Fade Out Gradient - Commonly
-  7. First Character - Solid Color - Unique Subtext
-  8. First Character - Solid Color - Unique Text
-  9. First Character - Solid Color - Commonly
-  10. Subtext - Solid Color - Unique Subtext
-  11. Whole Text - Emoji
+  - 01 Subtext - Fade In Gradient - Unique Subtext
+  - 02 Subtext - Fade In Gradient - Unique Text
+  - 03 Subtext - Fade In Gradient - Commonly
+  - 04 Subtext - Fade Out Gradient - Unique Subtext
+  - 05 Subtext - Fade Out Gradient - Unique Text
+  - 06 Subtext - Fade Out Gradient - Commonly
+  - 07 First Character - Solid Color - Unique Subtext
+  - 08 First Character - Solid Color - Unique Text
+  - 09 First Character - Solid Color - Commonly
+  - 10 Subtext - Solid Color - Unique Subtext
+  - 11 Whole Text - Emoji
 - Quick preview of render patterns.
-
-<!-- Preview render patterns GIF -->
 
 ### Commands
 | Command                                | Desscription                                                                                                                                       | Key Binding                                                                                                                                       |
@@ -73,11 +74,11 @@ This extension utilizes [Semantic Tokenization](https://code.visualstudio.com/ap
 - 09 First Character - Solid Color - Commonly
 - 10 Subtext - Solid Color - Unique Subtext
 - 11 Whole Text - Emoji
+<!-- GIF -->
 
 ## Extension Settings
 <!-- Only shows the effect, please the setting description in setting UI, GIF -->
 ### Basic
-- Render Delay
 - Ignore First Subtoken
 
 ### Experimental
