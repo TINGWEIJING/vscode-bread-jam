@@ -74,7 +74,10 @@ This extension utilizes [Semantic Tokenization](https://code.visualstudio.com/ap
 - 09 First Character - Solid Color - Commonly
 - 10 Subtext - Solid Color - Unique Subtext
 - 11 Whole Text - Emoji
-<!-- GIF -->
+
+<p align="center" width="100%">
+    <img width="100%" src="https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/images/preivew-render-patterns.gif?raw=true" alt="Preview render patterns">
+</p>
 
 ## Extension Settings
 <!-- Only shows the effect, please the setting description in setting UI, GIF -->
