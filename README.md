@@ -76,7 +76,7 @@ This extension utilizes [Semantic Tokenization](https://code.visualstudio.com/ap
 - 11 Whole Text - Emoji
 
 <p align="center" width="100%">
-    <img width="100%" src="https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/images/preivew-render-patterns.gif?raw=true" alt="Preview render patterns">
+    <img width="100%" src="https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/images/preview-render-patterns.gif?raw=true" alt="Preview render patterns">
 </p>
 
 ## Extension Settings
