@@ -1,18 +1,51 @@
 {
   "name": "bread-jam",
   "displayName": "Bread Jam",
-  "description": "Make your code easier to read by using color-rendered variables.",
-  "version": "0.0.1",
-  "publisher": "tingcode.com",
+  "description": "Make your code variables easier to distinguish with different render patterns.",
+  "version": "0.0.0",
+  "publisher": "tingcode",
+  "author": {
+    "name": "Ting Wei Jing",
+    "email": "tingweijingting2000@gmail.com",
+    "url": "https://tingcode.com"
+  },
+  "preview": true,
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#eff1f3",
+    "theme": "light"
+  },
+  "homepage": "https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TINGWEIJING/vscode-bread-jam.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TINGWEIJING/vscode-bread-jam/issues"
+  },
   "engines": {
     "vscode": "^1.87.0"
   },
   "license": "MIT",
   "categories": [
+    "Programming Languages",
+    "Themes",
+    "Visualization",
     "Other"
   ],
+  "keywords": [
+    "code",
+    "color",
+    "colour",
+    "variable",
+    "identifier",
+    "highlight",
+    "emoji",
+    "semantic",
+    "syntax"
+  ],
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -22,12 +55,12 @@
         "title": "Bread Jam: Select Render Pattern"
       },
       {
-        "command": "bread-jam.clearRenderingTemporarily",
-        "title": "Bread Jam: Clear Rendering Temporarily"
+        "command": "bread-jam.clearRenderingsTemporarily",
+        "title": "Bread Jam: Clear Renderings Temporarily"
       },
       {
-        "command": "bread-jam.reloadRendering",
-        "title": "Bread Jam: Reload Rendering"
+        "command": "bread-jam.reloadRenderings",
+        "title": "Bread Jam: Reload Renderings"
       },
       {
         "command": "bread-jam.turnOnOrOff",
@@ -55,11 +88,8 @@
           "order": 2,
           "type": "object",
           "default": {
-            "variable": "#9CDCFE",
             "variable:*readonly": "#4FC1FF",
-            "variable:declaration,readonly,local": "#4FC1FF",
-            "parameter": "#9CDCFE",
-            "property": "#9CDCFE"
+            "parameter:*readonly": "#4FC1FF"
           },
           "patternProperties": {
             "^[a-zA-Z]+[a-zA-Z0-9]*(?::(?:\\*?[a-zA-Z0-9]+)(?:,[a-zA-Z0-9]+)*)?$": {
@@ -69,19 +99,19 @@
             }
           },
           "additionalProperties": false,
-          "markdownDescription": "❗Experimental❗ \n\nSemantic token foreground colors for fade in/out gradient. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
+          "markdownDescription": "❗Experimental❗ \n\nSemantic token foreground colors for fade in/out gradient. TODO: Valid label: parameter, variable:*readonly, variable:declaration,readonly,local \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
         },
         "bread-jam.defaultSemanticForegroundColor": {
           "order": 3,
           "type": "string",
-          "default": "#569CD6",
+          "default": "#9CDCFE",
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "markdownDescription": "❗Experimental❗ \n\nDefault color for semantic foreground color. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
+          "markdownDescription": "❗Experimental❗ \n\nDefault color for semantic foreground color. TODO: Will use this color if combination not found in semanticForegroundColors \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
         },
         "bread-jam.commonColor": {
           "order": 4,
           "type": "string",
-          "default": "#FAFAFA",
+          "default": "#ffb645",
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "markdownDescription": "❗Experimental❗ \n\nCommon color. \n\nAffected render patterns: \n- 03 Subtext - Fade In Gradient - Commonly \n- 06 Subtext - Fade Out Gradient - Commonly \n- 09 First Character - Solid Color - Commonly"
         },
@@ -93,14 +123,34 @@
             "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
           },
           "default": [
-            "#d4b300",
-            "#6d8891",
-            "#886288",
-            "#c5eff7",
-            "#c8f7c5",
-            "#7fffd4"
+            "#ffaed2",
+            "#ffafb0",
+            "#ffb58e",
+            "#ffbf72",
+            "#ffcb60",
+            "#ecd861",
+            "#cae475",
+            "#a3ed93",
+            "#79f2b6",
+            "#c4cbff",
+            "#e4c0ff",
+            "#ffb7ff",
+            "#ffb1f3",
+            "#ff8dbf",
+            "#ff8e93",
+            "#ff9664",
+            "#ffa42c",
+            "#ffb400",
+            "#e0c500",
+            "#b6d431",
+            "#7fe06a",
+            "#21e79b",
+            "#afb4ff",
+            "#d7a6ff",
+            "#f79aff",
+            "#ff91e8"
           ],
-          "markdownDescription": "❗Experimental❗ \n\nGradient colors. Will use solid colors if is empty. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text"
+          "markdownDescription": "❗Experimental❗ \n\nGradient colors. TODO: If you find out lag, please reduce number of color, 8 number should be working fine. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text"
         },
         "bread-jam.solidColors": {
           "order": 6,
@@ -110,12 +160,32 @@
             "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
           },
           "default": [
-            "#d4b300",
-            "#6d8891",
-            "#886288",
-            "#c5eff7",
-            "#c8f7c5",
-            "#7fffd4"
+            "#ffaed2",
+            "#ffafb0",
+            "#ffb58e",
+            "#ffbf72",
+            "#ffcb60",
+            "#ecd861",
+            "#cae475",
+            "#a3ed93",
+            "#79f2b6",
+            "#c4cbff",
+            "#e4c0ff",
+            "#ffb7ff",
+            "#ffb1f3",
+            "#ff8dbf",
+            "#ff8e93",
+            "#ff9664",
+            "#ffa42c",
+            "#ffb400",
+            "#e0c500",
+            "#b6d431",
+            "#7fe06a",
+            "#21e79b",
+            "#afb4ff",
+            "#d7a6ff",
+            "#f79aff",
+            "#ff91e8"
           ],
           "markdownDescription": "❗Experimental❗ \n\nSolid colors. \n\nAffected render patterns: \n- 07 First Character - Solid Color - Unique Subtext \n- 08 First Character - Solid Color - Unique Text"
         },
@@ -317,6 +387,7 @@
             "📚",
             "🧽"
           ],
+          "maxItems": 256,
           "markdownDescription": "❗Experimental❗ \n\nEmojis. This should only be modified via the JSON settings for precise control. \n\nAffected render patterns: \n- 11 Whole Text - Emoji"
         },
         "bread-jam.targetedSemanticTokenTypes": {
@@ -646,7 +717,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "vscode-test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "deploy": "vsce publish --no-yarn"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
@@ -656,6 +728,7 @@
     "@typescript-eslint/parser": "^7.0.2",
     "@vscode/test-cli": "^0.0.6",
     "@vscode/test-electron": "^2.3.9",
+    "@vscode/vsce": "^2.26.1",
     "eslint": "^8.56.0",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",

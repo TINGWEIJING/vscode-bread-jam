@@ -54,8 +54,8 @@ export const VSCODE_COMMANDS = {
 
 export const EXTENSION_COMMANDS = {
   PROMPT_RENDER_PATTERN_SELECTION: `${EXTENSION_NAME}.promptRenderPatternSelection`,
-  CLEAR_RENDERING_TEMPORARILY: `${EXTENSION_NAME}.clearRenderingTemporarily`,
-  RELOAD_RENDERING: `${EXTENSION_NAME}.reloadRendering`,
+  CLEAR_RENDERINGS_TEMPORARILY: `${EXTENSION_NAME}.clearRenderingsTemporarily`,
+  RELOAD_RENDERINGS: `${EXTENSION_NAME}.reloadRenderings`,
   TURN_ON_OR_OFF: `${EXTENSION_NAME}.turnOnOrOff`,
 };
 

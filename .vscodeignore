@@ -2,6 +2,9 @@
 .vscode/**
 .vscode-test/**
 node_modules/**
+out/test/**
+**/*.map
+**/*.ts
 src/**
 **/.eslintrc.json
 .gitignore
@@ -14,6 +17,8 @@ package.lock.json
 .git/**
 .github/**
 **/*.svg
+**/*.png
+**/*.gif
 .DS_Store
 
 vsc-extension-quickstart.md
@@ -21,3 +26,5 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+
+!images/icon.png

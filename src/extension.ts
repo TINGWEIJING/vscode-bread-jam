@@ -98,7 +98,7 @@ export async function activate(context: ExtensionContext) {
       },
     );
   const clearRendingTemporarilyCommandDisposable = commands.registerCommand(
-    EXTENSION_COMMANDS.CLEAR_RENDERING_TEMPORARILY,
+    EXTENSION_COMMANDS.CLEAR_RENDERINGS_TEMPORARILY,
     () => {
       const isExtensionOn = checkIfExtensionIsOn(context);
       if (!isExtensionOn) {
@@ -109,8 +109,8 @@ export async function activate(context: ExtensionContext) {
       DecorationManager.initialize();
     },
   );
-  const reloadRenderingCommandDisposable = commands.registerCommand(
-    EXTENSION_COMMANDS.RELOAD_RENDERING,
+  const reloadRenderingsCommandDisposable = commands.registerCommand(
+    EXTENSION_COMMANDS.RELOAD_RENDERINGS,
     () => {
       const isExtensionOn = checkIfExtensionIsOn(context);
       if (!isExtensionOn) {
@@ -149,7 +149,7 @@ export async function activate(context: ExtensionContext) {
 
   context.subscriptions.push(promptRenderPatternSelectionCommandDisposable);
   context.subscriptions.push(clearRendingTemporarilyCommandDisposable);
-  context.subscriptions.push(reloadRenderingCommandDisposable);
+  context.subscriptions.push(reloadRenderingsCommandDisposable);
   context.subscriptions.push(turnOnOrOffCommandDisposable);
   context.subscriptions.push(
     workspace.onDidChangeTextDocument((textDocumentChangeEvent) => {
