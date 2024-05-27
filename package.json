@@ -99,14 +99,14 @@
             }
           },
           "additionalProperties": false,
-          "markdownDescription": "❗Experimental❗ \n\nSemantic token foreground colors for fade in/out gradient. TODO: Valid label: parameter, variable:*readonly, variable:declaration,readonly,local \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
+          "markdownDescription": "❗Experimental❗ \n\nSemantic token foreground colors for fade in/out gradient. \n\nThe format of item value is `<semantic token type>:<modifier>[,<modifier>]` \n\nExample of valid item: \n- parameter (applies to `paramater` semantic token type) \n- variable:*readonly (applies to `variable` semantic token type where one of the modifiers is `readonly`) \n- variable:declaration,readonly,local (applies to `variable` semantic token type which must has `declaration`, `readonly` and `local` modifiers) \n\nTo find the appropriate semantic token type and modifiers for your code components, use the `Developer: Inspect Editor Tokens and Scopes` command in VSCode.\n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
         },
         "bread-jam.defaultSemanticForegroundColor": {
           "order": 3,
           "type": "string",
           "default": "#9CDCFE",
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "markdownDescription": "❗Experimental❗ \n\nDefault color for semantic foreground color. TODO: Will use this color if combination not found in semanticForegroundColors \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
+          "markdownDescription": "❗Experimental❗ \n\nDefault color for semantic foreground color. \n\nThis color will be applied to semantic tokens not specifically defined in `Semantic Foreground Colors` setting. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 03 Subtext - Fade In Gradient - Commonly \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text \n- 06 Subtext - Fade Out Gradient - Commonly"
         },
         "bread-jam.commonColor": {
           "order": 4,
@@ -150,7 +150,7 @@
             "#f79aff",
             "#ff91e8"
           ],
-          "markdownDescription": "❗Experimental❗ \n\nGradient colors. TODO: If you find out lag, please reduce number of color, 8 number should be working fine. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text"
+          "markdownDescription": "❗Experimental❗ \n\nGradient colors. \n\nIf experiencing lag with this extension, reducing the number of colors to about 8 may improve performance. \n\nAffected render patterns: \n- 01 Subtext - Fade In Gradient - Unique Subtext \n- 02 Subtext - Fade In Gradient - Unique Text \n- 04 Subtext - Fade Out Gradient - Unique Subtext \n- 05 Subtext - Fade Out Gradient - Unique Text"
         },
         "bread-jam.solidColors": {
           "order": 6,
@@ -427,7 +427,7 @@
             "property"
           ],
           "uniqueItems": true,
-          "markdownDescription": "❗Experimental❗ \n\nTargeted Semantic token types to render."
+          "markdownDescription": "❗Experimental❗ \n\nTargeted Semantic token types to render. \n\nTo find the appropriate semantic token type for your code components, use the `Developer: Inspect Editor Tokens and Scopes` command in VSCode."
         },
         "bread-jam.permutationTable": {
           "order": 11,
@@ -699,7 +699,7 @@
           ],
           "minItems": 256,
           "maxItems": 256,
-          "markdownDescription": "❗Experimental❗ \n\nA permutation table used for Pearson hashing. This should only be modified via the JSON settings for precise control."
+          "markdownDescription": "❗Experimental❗ \n\nA permutation table used for Pearson hashing. \n\nAltering the table changes the hash results, which influences the color assignment of render patterns. \n\n**Note:** This table must contain exactly 256 unique values, each ranging from 0 to 255 \n\nThis should only be modified via the JSON settings for precise control."
         }
       }
     },
