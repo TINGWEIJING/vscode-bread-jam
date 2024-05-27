@@ -22,7 +22,7 @@ export async function activate(context: ExtensionContext) {
 
   const extensionConfig = workspace
     .getConfiguration()
-    .get<Partial<ExtensionConfig>>(EXTENSION_NAME); // TODO (WJ): update configuration key
+    .get<Partial<ExtensionConfig>>(EXTENSION_NAME);
   if (extensionConfig === undefined) {
     throw new Error("Unable to read configuration.");
   }
@@ -183,7 +183,7 @@ export async function activate(context: ExtensionContext) {
       }
       const extensionConfig = workspace
         .getConfiguration()
-        .get<Partial<ExtensionConfig>>(EXTENSION_NAME); // TODO (WJ): update configuration key
+        .get<Partial<ExtensionConfig>>(EXTENSION_NAME);
       if (extensionConfig === undefined) {
         throw new Error("Unable to read configuration.");
       }
