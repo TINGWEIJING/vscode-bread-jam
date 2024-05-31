@@ -80,22 +80,23 @@ This extension utilizes [Semantic Tokenization](https://code.visualstudio.com/ap
 </p>
 
 ## Extension Settings
-<!-- Only shows the effect, please the setting description in setting UI, GIF -->
+This section demonstrates **a few** of the effects of available extension's settings. For detailed explanations of each setting, please refer to the settings description in the VS Code extension settings UI.
+
 ### Basic
 - Ignore First Subtoken
+    ![Ignore First Subtoken](https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/images/ignore-first-subtoken.gif?raw=true)
 
 ### Experimental
-<!-- Subject to change in future -->
+These settings are experimental and may be changed or removed in future update.
+
 - Semantic Foreground Colors
-- Default Semantic Foreground Color
-- Common Color
-- Gradient Colors
-- Solid Colors
+    ![Semantic Foreground Colors](https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/images/semantic-foreground-colors.gif?raw=true)
 - Fade In Gradient Steps
-- Fade Out Gradient Steps
+    ![Fade In Gradient Steps](https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/images/fade-in-gradient-steps.gif?raw=true)
 - Emojis
+    ![Emojis](https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/images/emojis.gif?raw=true)
 - Targeted Semantic Token Types
-- Permutation Table
+    ![Targeted Semantic Token Types](https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/images/targeted-semantic-token-types.gif?raw=true)
 
 ## FAQ
 1. Why is it called "Bread Jam"?
