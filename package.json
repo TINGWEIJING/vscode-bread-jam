@@ -13,7 +13,7 @@
   "icon": "images/icon.png",
   "galleryBanner": {
     "color": "#eff1f3",
-    "theme": "light"
+    "theme": "dark"
   },
   "homepage": "https://github.com/TINGWEIJING/vscode-bread-jam/blob/main/README.md",
   "repository": {
