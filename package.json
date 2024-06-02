@@ -2,14 +2,13 @@
   "name": "bread-jam",
   "displayName": "Bread Jam",
   "description": "Make your code variables easier to distinguish with different render patterns.",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "publisher": "tingcode",
   "author": {
     "name": "Ting Wei Jing",
     "email": "tingweijingting2000@gmail.com",
     "url": "https://tingcode.com"
   },
-  "preview": true,
   "icon": "images/icon.png",
   "galleryBanner": {
     "color": "#eff1f3",
