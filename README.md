@@ -44,23 +44,29 @@ This extension provides various render patterns for code components, particularl
 | Bread Jam: Turn On/Off                  | Toggles the extension's effects on or off. This command allows you to quickly enable or disable the visual enhancements provided by the extension. | Windows & Linux: <kbd>Alt</kbd> + <kbd>B</kbd>, <kbd>Alt</kbd> + <kbd>J</kbd><br> MacOS: <kbd>⌥</kbd> + <kbd>B</kbd>, <kbd>⌥</kbd> + <kbd>J</kbd> |
 
 ## Supported Languages & Requirements
-This extension utilizes [Semantic Tokenization](https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide) supported by [Language Server Extensions](https://code.visualstudio.com/api/language-extensions/overview) for various programming languages. Below is a table listing the required language extensions. You only need to install the language extension(s) for the languages you plan to use.
+This extension utilizes [Semantic Tokenization](https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide) provided by [Language Server Extensions](https://code.visualstudio.com/api/language-extensions/overview) for various programming languages. Below is a table listing the language extensions that **may** support semantic highlighting. You only need to install the language extension(s) for the languages you intend to use.
 
-| Language   | Required Extension (Extension ID)                                                                                        |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------ |
-| TypeScript | [ms-vscode.vscode-typescript-next](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-next) |
-| C++        | [ms-vscode.cpptools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)                             |
-| Dart       | [Dart-Code.dart-code](https://marketplace.visualstudio.com/items?itemName=Dart-Code.dart-code)                           |
-| Java       | [redhat.java](https://marketplace.visualstudio.com/items?itemName=redhat.java)                                           |
-| Python     | [ms-python.python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)                                 |
-| Julia      | [julialang.language-julia](https://marketplace.visualstudio.com/items?itemName=julialang.language-julia)                 |
-| Lua        | [sumneko.lua](https://marketplace.visualstudio.com/items?itemName=sumneko.lua)                                           |
-| R          | [REditorSupport.r](https://marketplace.visualstudio.com/items?itemName=REditorSupport.r)                                 |
-| Ruby       | [Shopify.ruby-lsp](https://marketplace.visualstudio.com/items?itemName=Shopify.ruby-lsp)                                 |
-| Rust       | [rust-lang.rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)                   |
-| Go         | [golang.go](https://marketplace.visualstudio.com/items?itemName=golang.go)                                               |
-| C#         | [ms-dotnettools.csdevkit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)                   |
+| Language                | File Extension       | Support?                                                                                           | Required Extension (Extension ID)                                                                        |
+| ----------------------- | -------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Javascript / TypeScript | .js, .jsx, .ts, .tsx | ✅                                                                                                  | (VS Code built in extension)                                                                             |
+| C++                     | .cpp                 | ✅                                                                                                  | [ms-vscode.cpptools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)             |
+| C#                      | .cs                  | ✅                                                                                                  | [ms-dotnettools.csdevkit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)   |
+| Dart                    | .dart                | ✅                                                                                                  | [Dart-Code.dart-code](https://marketplace.visualstudio.com/items?itemName=Dart-Code.dart-code)           |
+| Go                      | .go                  | ✅ [Extra config required](https://github.com/golang/vscode-go/issues/3005#issuecomment-1758828034) | [golang.go](https://marketplace.visualstudio.com/items?itemName=golang.go)                               |
+| Java                    | .java                | ✅                                                                                                  | [redhat.java](https://marketplace.visualstudio.com/items?itemName=redhat.java)                           |
+| Lua                     | .lua                 | ✅                                                                                                  | [sumneko.lua](https://marketplace.visualstudio.com/items?itemName=sumneko.lua)                           |
+| Python                  | .py                  | ✅                                                                                                  | [ms-python.python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)                 |
+| Rust                    | .rs                  | ✅                                                                                                  | [rust-lang.rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)   |
+| Julia                   | .jl                  | ❌ [Issue](https://github.com/julia-vscode/julia-vscode/issues/1168)                                | [julialang.language-julia](https://marketplace.visualstudio.com/items?itemName=julialang.language-julia) |
+| R                       | .r                   | ❌ [Issue](https://github.com/REditorSupport/languageserver/issues/307)                             | [REditorSupport.r](https://marketplace.visualstudio.com/items?itemName=REditorSupport.r)                 |
+| Ruby                    | .ruby                | 🆘                                                                                                  | [Shopify.ruby-lsp](https://marketplace.visualstudio.com/items?itemName=Shopify.ruby-lsp)                 |
 
+Legend
+* ✅: Supported
+* ❌: Not Supported (with known issue)
+* 🆘: Help Needed
+
+> If you have experience with Ruby and can assist in making the Ruby extension work with this extension, please create an issue on this GitHub repository to let me know. Your expertise would be greatly appreciated!
 
 ## Render Patterns
 - 01 Subtext - Fade In Gradient - Unique Subtext
