@@ -1,9 +1,11 @@
 import type { ExtensionContext, LogOutputChannel } from "vscode";
 import { commands, window, workspace } from "vscode";
 import {
+  CONFIGURATION_KEYS,
   EXTENSION_COMMANDS,
   EXTENSION_NAME,
   QUICK_PICK_ITEMS,
+  RENDER_PATTERN_LABEL,
   WORKSPACE_STATE_KEYS,
 } from "./constant";
 import DecorationManager from "./decorationManager";
@@ -51,10 +53,15 @@ export async function activate(context: ExtensionContext) {
         if (!isExtensionOn) {
           return;
         }
-
-        const currentRenderPattern = context.workspaceState.get<string>(
+        // NOTE: Remove once update configuration implementation is stable
+        const _currentRenderPattern = context.workspaceState.get<string>(
           WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
         );
+        const selectedRenderPattern = workspace
+          .getConfiguration(EXTENSION_NAME)
+          .get<string>(CONFIGURATION_KEYS.SELECTED_RENDER_PATTERN);
+        const currentRenderPattern =
+          selectedRenderPattern?.slice(3) || RENDER_PATTERN_LABEL[0]; // TODO (WJ): implement regex validation and split + default constant
 
         const quickPick = window.createQuickPick();
         quickPick.items = QUICK_PICK_ITEMS.map((item) => ({
@@ -69,10 +76,18 @@ export async function activate(context: ExtensionContext) {
           if (selections.length === 0) {
             return;
           }
+          const selectedItem = selections[0];
+          // NOTE: Remove once update configuration implementation is stable
           context.workspaceState.update(
             WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
-            selections[0].description,
+            selectedItem.description,
           );
+          workspace
+            .getConfiguration(EXTENSION_NAME)
+            .update(
+              CONFIGURATION_KEYS.SELECTED_RENDER_PATTERN,
+              `${selectedItem.label} ${selectedItem.description}`,
+            );
           quickPick.hide();
         });
         quickPick.onDidChangeActive((selections) => {

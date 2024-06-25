@@ -4,9 +4,11 @@ import type {
   TextEditorDecorationType,
   ThemableDecorationRenderOptions,
 } from "vscode";
-import { window } from "vscode";
+import { window, workspace } from "vscode";
 import {
+  CONFIGURATION_KEYS,
   DEFAULT_SEMANTIC_KEY,
+  EXTENSION_NAME,
   RENDER_PATTERN_LABEL,
   WORKSPACE_STATE_KEYS,
 } from "./constant";
@@ -235,11 +237,16 @@ class DecorationManager implements IDecorationManager {
 
   private initialize() {
     // Update current render pattern
+    // NOTE: Remove once update configuration implementation is stable
     const workspaceStateRenderPattern = this.context.workspaceState.get<string>(
       WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
     );
-    if (workspaceStateRenderPattern !== undefined) {
-      this.currentRenderPattern = workspaceStateRenderPattern;
+    // TODO (WJ): use this.extensionConfig
+    const configurationSelectedRenderPattern = workspace
+      .getConfiguration(EXTENSION_NAME)
+      .get<string>(CONFIGURATION_KEYS.SELECTED_RENDER_PATTERN);
+    if (configurationSelectedRenderPattern !== undefined) {
+      this.currentRenderPattern = configurationSelectedRenderPattern?.slice(3); // TODO (WJ): implement regex validation and split
     } else {
       this.context.workspaceState.update(
         WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,

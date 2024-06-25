@@ -8,6 +8,7 @@ export const EXTENSION_ID: string = `tingcode.com.${EXTENSION_NAME}`;
 export const FAULTY_EXTENSION_CONFIG: ExtensionConfig = {
   renderDelay: 500,
   ignoreFirstSubtoken: false,
+  selectedRenderPattern: "01 Subtext - Fade In Gradient - Unique Subtext", // TODO (WJ): Make into variable
   semanticForegroundColors: { variable: "#000000" },
   defaultSemanticForegroundColor: "#FF0000",
   commonColor: "#FF0000",
@@ -44,20 +45,24 @@ export const FAULTY_EXTENSION_CONFIG: ExtensionConfig = {
 export const WORKSPACE_STATE_KEYS = {
   SELECTED_RENDER_PATTERN: "selectedRenderPattern",
   IS_EXTENSION_ON: "isExtensionOn",
-};
+} as const;
+
+export const CONFIGURATION_KEYS = {
+  SELECTED_RENDER_PATTERN: "selectedRenderPattern",
+} as const;
 
 export const VSCODE_COMMANDS = {
   PROVIDE_DOCUMENT_SEMANTIC_TOKENS_LEGEND:
     "vscode.provideDocumentSemanticTokensLegend",
   PROVIDE_DOCUMENT_SEMANTIC_TOKENS: "vscode.provideDocumentSemanticTokens",
-};
+} as const;
 
 export const EXTENSION_COMMANDS = {
   PROMPT_RENDER_PATTERN_SELECTION: `${EXTENSION_NAME}.promptRenderPatternSelection`,
   CLEAR_RENDERINGS_TEMPORARILY: `${EXTENSION_NAME}.clearRenderingsTemporarily`,
   RELOAD_RENDERINGS: `${EXTENSION_NAME}.reloadRenderings`,
   TURN_ON_OR_OFF: `${EXTENSION_NAME}.turnOnOrOff`,
-};
+} as const;
 
 export const DEFAULT_SEMANTIC_KEY = "default";
 

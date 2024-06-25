@@ -70,6 +70,7 @@ export interface SemanticCodeToken {
 export interface ExtensionConfig {
   renderDelay: number;
   ignoreFirstSubtoken: boolean;
+  selectedRenderPattern: string;
   semanticForegroundColors: { [key: string]: string };
   defaultSemanticForegroundColor: string;
   commonColor: string;
