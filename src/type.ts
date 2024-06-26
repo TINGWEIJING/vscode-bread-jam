@@ -70,6 +70,13 @@ export interface SemanticCodeToken {
 export interface ExtensionConfig {
   renderDelay: number;
   ignoreFirstSubtoken: boolean;
+  /**
+   * The format of the selectedRenderPattern value is `<label numbering> <render pattern label>`.
+   * To retrieve the render pattern label, split the value by first space `' '` and get the last element
+   * OR slice from index 3.
+   *
+   * Example: `01 Subtext - Fade In Gradient - Unique Subtext`
+   */
   selectedRenderPattern: string;
   semanticForegroundColors: { [key: string]: string };
   defaultSemanticForegroundColor: string;

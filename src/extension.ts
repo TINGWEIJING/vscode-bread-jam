@@ -2,10 +2,10 @@ import type { ExtensionContext, LogOutputChannel } from "vscode";
 import { commands, window, workspace } from "vscode";
 import {
   CONFIGURATION_KEYS,
+  DEFAULT_SELECTED_RENDER_PATTERN,
   EXTENSION_COMMANDS,
   EXTENSION_NAME,
   QUICK_PICK_ITEMS,
-  RENDER_PATTERN_LABEL,
   WORKSPACE_STATE_KEYS,
 } from "./constant";
 import DecorationManager from "./decorationManager";
@@ -60,13 +60,14 @@ export async function activate(context: ExtensionContext) {
         const selectedRenderPattern = workspace
           .getConfiguration(EXTENSION_NAME)
           .get<string>(CONFIGURATION_KEYS.SELECTED_RENDER_PATTERN);
-        const currentRenderPattern =
-          selectedRenderPattern?.slice(3) || RENDER_PATTERN_LABEL[0]; // TODO (WJ): implement regex validation and split + default constant
+        const currentRenderPatternLabel = (
+          selectedRenderPattern || DEFAULT_SELECTED_RENDER_PATTERN
+        ).slice(3);
 
         const quickPick = window.createQuickPick();
         quickPick.items = QUICK_PICK_ITEMS.map((item) => ({
           ...item,
-          picked: item.description === currentRenderPattern,
+          picked: item.description === currentRenderPatternLabel,
         }));
         quickPick.matchOnDetail = true;
         quickPick.matchOnDescription = true;
@@ -102,6 +103,17 @@ export async function activate(context: ExtensionContext) {
         });
         quickPick.onDidHide((e) => {
           DecorationManager.clear();
+          const extensionConfig = workspace
+            .getConfiguration()
+            .get<Partial<ExtensionConfig>>(EXTENSION_NAME);
+          if (extensionConfig === undefined) {
+            throw new Error("Unable to read configuration.");
+          }
+          const validatedExtensionConfig = validateExtensionConfig(
+            extensionConfig,
+            (message) => window.showErrorMessage(message),
+          );
+          DecorationManager.updateExtensionConfig(validatedExtensionConfig);
           DecorationManager.initialize();
           const activeEditor = window.activeTextEditor;
           if (activeEditor !== undefined) {
