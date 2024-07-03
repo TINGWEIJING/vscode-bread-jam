@@ -100,7 +100,7 @@
             "10 Subtext - Solid Color - Unique Subtext",
             "11 Whole Text - Emoji"
           ],
-          "markdownDescription": "❗Experimental❗ \n\nSame as command select render pattern"
+          "markdownDescription": "❗Experimental❗ \n\nSimilar functionality to the command `Bread Jam: Select Render Pattern`. \n\nChanging this value in Workspace settings affects all window instances of that workspace. In User settings, it sets the default render pattern for new folders opened in VS Code."
         },
         "bread-jam.semanticForegroundColors": {
           "order": 3,
