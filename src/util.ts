@@ -7,6 +7,7 @@ import type {
 } from "vscode";
 import { commands, Range } from "vscode";
 import {
+  ALL_RENDER_PATTERN_SET,
   DEFAULT_SEMANTIC_KEY,
   FAULTY_EXTENSION_CONFIG,
   REGEX_LITERAL,
@@ -34,6 +35,15 @@ export function validateExtensionConfig(
   ) {
     error("`renderDelay` must be an integer greater than or equal to 100.");
     clonedExtensionConfig.renderDelay = FAULTY_EXTENSION_CONFIG.renderDelay;
+  }
+
+  const selectedRenderPattern = clonedExtensionConfig.selectedRenderPattern;
+  if (!ALL_RENDER_PATTERN_SET.has(selectedRenderPattern || "")) {
+    error(
+      `\`${selectedRenderPattern}\` is not a valid render pattern. Please select a valid render pattern.`,
+    );
+    clonedExtensionConfig.selectedRenderPattern =
+      FAULTY_EXTENSION_CONFIG.selectedRenderPattern;
   }
 
   const semanticForegroundColors =

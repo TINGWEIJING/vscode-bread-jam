@@ -6,11 +6,11 @@ import type {
 } from "vscode";
 import { window } from "vscode";
 import {
+  DEFAULT_SELECTED_RENDER_PATTERN,
   DEFAULT_SEMANTIC_KEY,
-  RENDER_PATTERN_LABEL,
   WORKSPACE_STATE_KEYS,
 } from "./constant";
-import { renderPatternToDecorationProcessor } from "./decorationProcessor";
+import { renderPatternLabelToDecorationProcessor } from "./decorationProcessor";
 import type {
   DecorationProcessor,
   ExtensionConfig,
@@ -42,7 +42,8 @@ class DecorationManager implements IDecorationManager {
   public gradientColorSize: number = 0;
   public fadeOutGradientStepSize: number = 0;
   public fadeInGradientStepSize: number = 0;
-  public currentRenderPattern: string = RENDER_PATTERN_LABEL[0];
+  public currentRenderPatternLabel: string =
+    DEFAULT_SELECTED_RENDER_PATTERN.slice(3);
   public debouncedDecorateVariables: (editor: TextEditor | undefined) => void =
     () => {};
   public debouncedPreviewDecorateVariables: (
@@ -215,7 +216,7 @@ class DecorationManager implements IDecorationManager {
 
   private previewRenderPattern(renderPatternLabel: string) {
     const decorationProcessor =
-      renderPatternToDecorationProcessor[renderPatternLabel];
+      renderPatternLabelToDecorationProcessor[renderPatternLabel];
 
     if (decorationProcessor === undefined) {
       throw new Error("Decoration processor not found");
@@ -235,17 +236,18 @@ class DecorationManager implements IDecorationManager {
 
   private initialize() {
     // Update current render pattern
+    // NOTE: Remove once update configuration implementation is stable
     const workspaceStateRenderPattern = this.context.workspaceState.get<string>(
       WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
     );
-    if (workspaceStateRenderPattern !== undefined) {
-      this.currentRenderPattern = workspaceStateRenderPattern;
-    } else {
+    if (workspaceStateRenderPattern === undefined) {
       this.context.workspaceState.update(
         WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
-        this.currentRenderPattern,
+        this.currentRenderPatternLabel,
       );
     }
+    this.currentRenderPatternLabel =
+      this.extensionConfig.selectedRenderPattern.slice(3);
 
     this.gradientColorSize = this.extensionConfig.gradientColors.length;
     this.fadeOutGradientStepSize =
@@ -272,10 +274,10 @@ class DecorationManager implements IDecorationManager {
 
     // Initialize debounced decorate variables function
     const decorationProcessor =
-      renderPatternToDecorationProcessor[this.currentRenderPattern];
+      renderPatternLabelToDecorationProcessor[this.currentRenderPatternLabel];
     if (decorationProcessor === undefined) {
       throw new Error(
-        `decorationProcessor is undefined. this.currentRenderPattern: ${this.currentRenderPattern}`,
+        `decorationProcessor is undefined. this.currentRenderPatternLabel: ${this.currentRenderPatternLabel}`,
       );
     }
     this.debouncedDecorateVariables = buildDebouncedDecorateVariablesFunction(
