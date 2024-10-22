@@ -24,7 +24,7 @@ import {
  * - *3dArray
  */
 
-export const renderPatternToDecorationProcessor: Record<
+export const renderPatternLabelToDecorationProcessor: Record<
   string,
   DecorationProcessor | undefined
 > = {

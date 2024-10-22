@@ -1,6 +1,8 @@
 import type { ExtensionContext, LogOutputChannel } from "vscode";
 import { commands, window, workspace } from "vscode";
 import {
+  CONFIGURATION_KEYS,
+  DEFAULT_SELECTED_RENDER_PATTERN,
   EXTENSION_COMMANDS,
   EXTENSION_NAME,
   QUICK_PICK_ITEMS,
@@ -51,15 +53,20 @@ export async function activate(context: ExtensionContext) {
         if (!isExtensionOn) {
           return;
         }
-
-        const currentRenderPattern = context.workspaceState.get<string>(
+        const currentRenderPatternLabel = context.workspaceState.get<string>(
           WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
         );
+        // const selectedRenderPattern = workspace // TODO (WJ): Remove this and move to initial configuration?//
+        //   .getConfiguration(EXTENSION_NAME)
+        //   .get<string>(CONFIGURATION_KEYS.SELECTED_RENDER_PATTERN);
+        // const currentRenderPatternLabel = (
+        //   selectedRenderPattern || DEFAULT_SELECTED_RENDER_PATTERN
+        // ).slice(3);
 
         const quickPick = window.createQuickPick();
         quickPick.items = QUICK_PICK_ITEMS.map((item) => ({
           ...item,
-          picked: item.description === currentRenderPattern,
+          picked: item.description === currentRenderPatternLabel,
         }));
         quickPick.matchOnDetail = true;
         quickPick.matchOnDescription = true;
@@ -69,9 +76,14 @@ export async function activate(context: ExtensionContext) {
           if (selections.length === 0) {
             return;
           }
+          const selectedItem = selections[0];
           context.workspaceState.update(
             WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
-            selections[0].description,
+            selectedItem.description,
+          );
+          workspace.getConfiguration(EXTENSION_NAME).update(
+            CONFIGURATION_KEYS.SELECTED_RENDER_PATTERN,
+            `${selectedItem.label} ${selectedItem.description}`, // NOTE: selectedItem.label is the index numbering, selectedItem.description is the render pattern label
           );
           quickPick.hide();
         });
@@ -181,14 +193,69 @@ export async function activate(context: ExtensionContext) {
       if (!isConfigurationChanged) {
         return;
       }
-      const extensionConfig = workspace
+      const newExtensionConfig = workspace
         .getConfiguration()
         .get<Partial<ExtensionConfig>>(EXTENSION_NAME);
-      if (extensionConfig === undefined) {
+      if (newExtensionConfig === undefined) {
         throw new Error("Unable to read configuration.");
       }
+      console.log(newExtensionConfig.selectedRenderPattern); // TODO (WJ): remove
+      // TODO (WJ): implement shouldSkipDueToSelectRenderPatternCommand
+      // TODO (WJ): test change other config
+      const currentRenderPatternLabel = context.workspaceState.get<string>(
+        WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
+      );
+      const isRenderPatternSameAcrossWorkspaceStateAndConfig =
+        currentRenderPatternLabel ===
+        newExtensionConfig?.selectedRenderPattern?.slice(3);
+      const previousExtensionConfig =
+        DecorationManager.getInstance().extensionConfig;
+      const isSelectedRenderPatternConfigChanged =
+        previousExtensionConfig.selectedRenderPattern !==
+        newExtensionConfig?.selectedRenderPattern;
+      let configDifferentCount = 0;
+      for (const key in previousExtensionConfig) {
+        configDifferentCount +=
+          (previousExtensionConfig as Record<string, any>)[key] !==
+          (newExtensionConfig as Record<string, any>)[key]
+            ? 1
+            : 0;
+      }
+      console.log(
+        "🚀 ~ workspace.onDidChangeConfiguration ~ isRenderPatternSameAcrossWorkspaceStateAndConfig:",
+        isRenderPatternSameAcrossWorkspaceStateAndConfig,
+      );
+      console.log(
+        "🚀 ~ workspace.onDidChangeConfiguration ~ isSelectedRenderPatternConfigChanged:",
+        isSelectedRenderPatternConfigChanged,
+      );
+      console.log(
+        "🚀 ~ workspace.onDidChangeConfiguration ~ configDifferentCount:",
+        configDifferentCount,
+      );
+      if (
+        isRenderPatternSameAcrossWorkspaceStateAndConfig &&
+        configDifferentCount === 1 &&
+        isSelectedRenderPatternConfigChanged
+      ) {
+        return;
+      }
+
+      // Update selected render pattern in workspace state
+      const newSelectedRenderPatternLabel =
+        newExtensionConfig?.selectedRenderPattern?.slice(3);
+      if (
+        isSelectedRenderPatternConfigChanged &&
+        newSelectedRenderPatternLabel !== undefined
+      ) {
+        context.workspaceState.update(
+          WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
+          newSelectedRenderPatternLabel,
+        );
+      }
+
       const validatedExtensionConfig = validateExtensionConfig(
-        extensionConfig,
+        newExtensionConfig,
         (message) => window.showErrorMessage(message),
       );
       DecorationManager.clear();
