@@ -144,6 +144,7 @@ class DecorationManager implements IDecorationManager {
   }
 
   public static clear() {
+    console.log("DecorationManager.clear()");
     DecorationManager.getInstance().clear();
     this.isInitialized = false;
   }
@@ -236,18 +237,18 @@ class DecorationManager implements IDecorationManager {
 
   private initialize() {
     // Update current render pattern
-    // NOTE: Remove once update configuration implementation is stable
-    const workspaceStateRenderPattern = this.context.workspaceState.get<string>(
-      WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
-    );
-    if (workspaceStateRenderPattern === undefined) {
+    const workspaceStateRenderPatternLabel =
+      this.context.workspaceState.get<string>(
+        WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
+      );
+    if (workspaceStateRenderPatternLabel !== undefined) {
+      this.currentRenderPatternLabel = workspaceStateRenderPatternLabel;
+    } else {
       this.context.workspaceState.update(
         WORKSPACE_STATE_KEYS.SELECTED_RENDER_PATTERN,
         this.currentRenderPatternLabel,
       );
     }
-    this.currentRenderPatternLabel =
-      this.extensionConfig.selectedRenderPattern.slice(3);
 
     this.gradientColorSize = this.extensionConfig.gradientColors.length;
     this.fadeOutGradientStepSize =

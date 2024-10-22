@@ -39,6 +39,7 @@ export function validateExtensionConfig(
 
   const selectedRenderPattern = clonedExtensionConfig.selectedRenderPattern;
   if (!ALL_RENDER_PATTERN_SET.has(selectedRenderPattern || "")) {
+    // TODO (WJ): test if this is correct
     error(
       `\`${selectedRenderPattern}\` is not a valid render pattern. Please select a valid render pattern.`,
     );

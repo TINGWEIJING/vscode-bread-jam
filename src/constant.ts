@@ -6,7 +6,7 @@ export const EXTENSION_NAME: string = "bread-jam";
 export const EXTENSION_ID: string = `tingcode.com.${EXTENSION_NAME}`;
 
 export const WORKSPACE_STATE_KEYS = {
-  SELECTED_RENDER_PATTERN: "selectedRenderPattern", // NOTE: Remove once update configuration implementation is stable
+  SELECTED_RENDER_PATTERN: "selectedRenderPattern",
   IS_EXTENSION_ON: "isExtensionOn",
 } as const;
 
